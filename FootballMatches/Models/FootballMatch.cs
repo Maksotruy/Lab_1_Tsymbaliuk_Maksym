@@ -15,4 +15,6 @@ public class FootballMatch
     public DateOnly MatchDate { get; set; }
 
     public string? Stadium { get; set; }
+
+    public MatchStatus Status { get; set; }
 }
