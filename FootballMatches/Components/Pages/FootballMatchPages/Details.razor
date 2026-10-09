@@ -1,0 +1,58 @@
+@page "/footballmatches/details"
+@using Microsoft.EntityFrameworkCore
+@using FootballMatches.Models
+@inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>FootballMatch</h2>
+    <hr />
+    @if (footballmatch is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">HomeTeam</dt>
+            <dd class="col-sm-10">@footballmatch.HomeTeam</dd>
+            <dt class="col-sm-2">AwayTeam</dt>
+            <dd class="col-sm-10">@footballmatch.AwayTeam</dd>
+            <dt class="col-sm-2">HomeScore</dt>
+            <dd class="col-sm-10">@footballmatch.HomeScore</dd>
+            <dt class="col-sm-2">AwayScore</dt>
+            <dd class="col-sm-10">@footballmatch.AwayScore</dd>
+            <dt class="col-sm-2">MatchDate</dt>
+            <dd class="col-sm-10">@footballmatch.MatchDate</dd>
+            <dt class="col-sm-2">Stadium</dt>
+            <dd class="col-sm-10">@footballmatch.Stadium</dd>
+            <dt class="col-sm-2">Status</dt>
+            <dd class="col-sm-10">@footballmatch.Status</dd>
+        </dl>
+        <div>
+            <a href="@($"/footballmatches/edit?id={footballmatch.Id}")">Edit</a> |
+            <a href="@($"/footballmatches")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private FootballMatch? footballmatch;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        footballmatch = await context.FootballMatches.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (footballmatch is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+}

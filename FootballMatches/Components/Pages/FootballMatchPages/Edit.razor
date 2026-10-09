@@ -1,0 +1,124 @@
+@page "/footballmatches/edit"
+@using Microsoft.EntityFrameworkCore
+@using FootballMatches.Models
+@inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>FootballMatch</h2>
+<hr />
+@if (FootballMatch is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="FootballMatch" OnValidSubmit="UpdateFootballMatch" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="FootballMatch.Id" value="@FootballMatch.Id" />
+                <div class="mb-3">
+                    <label for="hometeam" class="form-label">HomeTeam:</label>
+                    <InputText id="hometeam" @bind-Value="FootballMatch.HomeTeam" class="form-control" />
+                    <ValidationMessage For="() => FootballMatch.HomeTeam" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="awayteam" class="form-label">AwayTeam:</label>
+                    <InputText id="awayteam" @bind-Value="FootballMatch.AwayTeam" class="form-control" />
+                    <ValidationMessage For="() => FootballMatch.AwayTeam" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="homescore" class="form-label">HomeScore:</label>
+                    <InputNumber id="homescore" @bind-Value="FootballMatch.HomeScore" class="form-control" />
+                    <ValidationMessage For="() => FootballMatch.HomeScore" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="awayscore" class="form-label">AwayScore:</label>
+                    <InputNumber id="awayscore" @bind-Value="FootballMatch.AwayScore" class="form-control" />
+                    <ValidationMessage For="() => FootballMatch.AwayScore" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="matchdate" class="form-label">MatchDate:</label>
+                    <InputDate id="matchdate" @bind-Value="FootballMatch.MatchDate" class="form-control" />
+                    <ValidationMessage For="() => FootballMatch.MatchDate" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="stadium" class="form-label">Stadium:</label>
+                    <InputText id="stadium" @bind-Value="FootballMatch.Stadium" class="form-control" />
+                    <ValidationMessage For="() => FootballMatch.Stadium" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status:</label>
+                    <InputSelect id="status" @bind-Value="FootballMatch.Status" class="form-control">
+                        @foreach (var status in Enum.GetValues<MatchStatus>())
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => FootballMatch.Status" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/footballmatches">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private FootballMatch? FootballMatch { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        FootballMatch ??= await context.FootballMatches.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (FootballMatch is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateFootballMatch()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(FootballMatch!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!FootballMatchExists(FootballMatch!.Id))
+            {
+                NavigationManager.NotFound();
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/footballmatches");
+    }
+
+    private bool FootballMatchExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.FootballMatches.Any(e => e.Id == id);
+    }
+}

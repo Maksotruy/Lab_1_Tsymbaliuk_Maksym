@@ -1,0 +1,60 @@
+@page "/footballmatches"
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FootballMatches.Models
+@using FootballMatches.Data
+@implements IAsyncDisposable
+@inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="footballmatches/create">Create New</a>
+</p>
+
+<QuickGrid Class="table" Items="@context.FootballMatches.Skip((CurrentPage - 1) * PageSize).Take(PageSize)">
+    <PropertyColumn Property="footballmatch => footballmatch.HomeTeam" />
+    <PropertyColumn Property="footballmatch => footballmatch.AwayTeam" />
+    <PropertyColumn Property="footballmatch => footballmatch.HomeScore" />
+    <PropertyColumn Property="footballmatch => footballmatch.AwayScore" />
+    <PropertyColumn Property="footballmatch => footballmatch.MatchDate" />
+    <PropertyColumn Property="footballmatch => footballmatch.Stadium" />
+    <PropertyColumn Property="footballmatch => footballmatch.Status" />
+
+    <TemplateColumn Context="footballmatch">
+        <a href="@($"footballmatches/edit?id={footballmatch.Id}")">Edit</a> |
+        <a href="@($"footballmatches/details?id={footballmatch.Id}")">Details</a> |
+        <a href="@($"footballmatches/delete?id={footballmatch.Id}")">Delete</a>
+    </TemplateColumn>
+</QuickGrid>
+
+@if (CurrentPage > 1)
+{
+    <a href="@($"footballmatches?page={CurrentPage - 1}")">Назад</a>
+}
+
+<span class="mx-2">Сторінка @CurrentPage</span>
+
+@if (context.FootballMatches.Count() > CurrentPage * PageSize)
+{
+    <a href="@($"footballmatches?page={CurrentPage + 1}")">Далі</a>
+}
+
+@code {
+    private FootballMatchesContext context = default!;
+
+    protected override void OnInitialized()
+    {
+        context = DbFactory.CreateDbContext();
+    }
+
+    public async ValueTask DisposeAsync() => await context.DisposeAsync();
+    private const int PageSize = 10;
+
+    [SupplyParameterFromQuery]
+    public int? Page { get; set; }
+
+    private int CurrentPage => Page is > 0 ? Page.Value : 1;
+}
