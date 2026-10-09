@@ -1,0 +1,51 @@
+<div class="card mb-3">
+    <div class="card-body">
+
+        @if (!string.IsNullOrWhiteSpace(Caption))
+        {
+            <h4 class="card-title">@Caption</h4>
+        }
+
+        <h5>@FootballMatch.HomeTeam — @FootballMatch.AwayTeam</h5>
+
+        <p>
+            <strong>Рахунок:</strong>
+            @FootballMatch.HomeScore : @FootballMatch.AwayScore
+        </p>
+
+        <p>
+            <strong>Дата:</strong>
+            @FootballMatch.MatchDate.ToString("dd.MM.yyyy")
+        </p>
+
+        @if (ShowDetails)
+        {
+            <p>
+                <strong>Стадіон:</strong>
+                @FootballMatch.Stadium
+            </p>
+
+            <p>
+                <strong>Статус:</strong>
+                @FootballMatch.Status
+            </p>
+
+            <p>
+                <strong>ID матчу:</strong>
+                @FootballMatch.Id
+            </p>
+        }
+
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public FootballMatch FootballMatch { get; set; } = default!;
+
+    [Parameter]
+    public string? Caption { get; set; }
+
+    [Parameter]
+    public bool ShowDetails { get; set; } = true;
+}
