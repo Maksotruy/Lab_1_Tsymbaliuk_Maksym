@@ -1,75 +1,155 @@
+
 @page "/footballmatches/edit"
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Data.Sqlite
 @using FootballMatches.Models
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Edit</PageTitle>
+<PageTitle>Редагування матчу</PageTitle>
 
-<h1>Edit</h1>
-
-<h2>FootballMatch</h2>
+<h1>Редагування футбольного матчу</h1>
 <hr />
+
 @if (FootballMatch is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Завантаження...</em></p>
 }
 else
 {
     <div class="row">
         <div class="col-md-4">
-            <EditForm method="post" Model="FootballMatch" OnValidSubmit="UpdateFootballMatch" FormName="edit" Enhance>
+
+            <EditForm method="post"
+                      Model="FootballMatch"
+                      OnValidSubmit="UpdateFootballMatch"
+                      FormName="edit"
+                      Enhance>
+
                 <DataAnnotationsValidator />
-                <ValidationSummary role="alert"/>
-                <input type="hidden" name="FootballMatch.Id" value="@FootballMatch.Id" />
+
+                <ValidationSummary class="text-danger" role="alert" />
+
+                @if (error is not null)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @error
+                    </div>
+                }
+
+                <input type="hidden"
+                       name="FootballMatch.Id"
+                       value="@FootballMatch.Id" />
+
                 <div class="mb-3">
-                    <label for="hometeam" class="form-label">HomeTeam:</label>
-                    <InputText id="hometeam" @bind-Value="FootballMatch.HomeTeam" class="form-control" />
-                    <ValidationMessage For="() => FootballMatch.HomeTeam" class="text-danger" />
+                    <label for="hometeam" class="form-label">
+                        Домашня команда:
+                    </label>
+
+                    <InputText id="hometeam"
+                               @bind-Value="FootballMatch.HomeTeam"
+                               class="form-control" />
+
+                    <ValidationMessage For="() => FootballMatch.HomeTeam"
+                                       class="text-danger" />
                 </div>
+
                 <div class="mb-3">
-                    <label for="awayteam" class="form-label">AwayTeam:</label>
-                    <InputText id="awayteam" @bind-Value="FootballMatch.AwayTeam" class="form-control" />
-                    <ValidationMessage For="() => FootballMatch.AwayTeam" class="text-danger" />
+                    <label for="awayteam" class="form-label">
+                        Гостьова команда:
+                    </label>
+
+                    <InputText id="awayteam"
+                               @bind-Value="FootballMatch.AwayTeam"
+                               class="form-control" />
+
+                    <ValidationMessage For="() => FootballMatch.AwayTeam"
+                                       class="text-danger" />
                 </div>
+
                 <div class="mb-3">
-                    <label for="homescore" class="form-label">HomeScore:</label>
-                    <InputNumber id="homescore" @bind-Value="FootballMatch.HomeScore" class="form-control" />
-                    <ValidationMessage For="() => FootballMatch.HomeScore" class="text-danger" />
+                    <label for="homescore" class="form-label">
+                        Голи домашньої команди:
+                    </label>
+
+                    <InputNumber id="homescore"
+                                 @bind-Value="FootballMatch.HomeScore"
+                                 class="form-control" />
+
+                    <ValidationMessage For="() => FootballMatch.HomeScore"
+                                       class="text-danger" />
                 </div>
+
                 <div class="mb-3">
-                    <label for="awayscore" class="form-label">AwayScore:</label>
-                    <InputNumber id="awayscore" @bind-Value="FootballMatch.AwayScore" class="form-control" />
-                    <ValidationMessage For="() => FootballMatch.AwayScore" class="text-danger" />
+                    <label for="awayscore" class="form-label">
+                        Голи гостьової команди:
+                    </label>
+
+                    <InputNumber id="awayscore"
+                                 @bind-Value="FootballMatch.AwayScore"
+                                 class="form-control" />
+
+                    <ValidationMessage For="() => FootballMatch.AwayScore"
+                                       class="text-danger" />
                 </div>
+
                 <div class="mb-3">
-                    <label for="matchdate" class="form-label">MatchDate:</label>
-                    <InputDate id="matchdate" @bind-Value="FootballMatch.MatchDate" class="form-control" />
-                    <ValidationMessage For="() => FootballMatch.MatchDate" class="text-danger" />
+                    <label for="matchdate" class="form-label">
+                        Дата матчу:
+                    </label>
+
+                    <InputDate id="matchdate"
+                               @bind-Value="FootballMatch.MatchDate"
+                               class="form-control" />
+
+                    <ValidationMessage For="() => FootballMatch.MatchDate"
+                                       class="text-danger" />
                 </div>
+
                 <div class="mb-3">
-                    <label for="stadium" class="form-label">Stadium:</label>
-                    <InputText id="stadium" @bind-Value="FootballMatch.Stadium" class="form-control" />
-                    <ValidationMessage For="() => FootballMatch.Stadium" class="text-danger" />
+                    <label for="stadium" class="form-label">
+                        Стадіон:
+                    </label>
+
+                    <InputText id="stadium"
+                               @bind-Value="FootballMatch.Stadium"
+                               class="form-control" />
+
+                    <ValidationMessage For="() => FootballMatch.Stadium"
+                                       class="text-danger" />
                 </div>
+
                 <div class="mb-3">
-                    <label for="status" class="form-label">Status:</label>
-                    <InputSelect id="status" @bind-Value="FootballMatch.Status" class="form-control">
+                    <label for="status" class="form-label">
+                        Статус матчу:
+                    </label>
+
+                    <InputSelect id="status"
+                                 @bind-Value="FootballMatch.Status"
+                                 class="form-control">
+
                         @foreach (var status in Enum.GetValues<MatchStatus>())
                         {
                             <option value="@status">@status</option>
                         }
+
                     </InputSelect>
-                    <ValidationMessage For="() => FootballMatch.Status" class="text-danger" />
+
+                    <ValidationMessage For="() => FootballMatch.Status"
+                                       class="text-danger" />
                 </div>
-                <button type="submit" class="btn btn-primary">Save</button>
+
+                <button type="submit" class="btn btn-primary">
+                    Зберегти зміни
+                </button>
+
             </EditForm>
         </div>
     </div>
 }
 
-<div>
-    <a href="/footballmatches">Back to List</a>
+<div class="mt-3">
+    <a href="/footballmatches">Повернутися до списку</a>
 </div>
 
 @code {
@@ -79,10 +159,14 @@ else
     [SupplyParameterFromForm]
     private FootballMatch? FootballMatch { get; set; }
 
+    private string? error;
+
     protected override async Task OnInitializedAsync()
     {
         using var context = DbFactory.CreateDbContext();
-        FootballMatch ??= await context.FootballMatches.FirstOrDefaultAsync(m => m.Id == Id);
+
+        FootballMatch ??= await context.FootballMatches
+            .FirstOrDefaultAsync(m => m.Id == Id);
 
         if (FootballMatch is null)
         {
@@ -90,27 +174,84 @@ else
         }
     }
 
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
     private async Task UpdateFootballMatch()
     {
+        error = null;
+
+        if (FootballMatch is null)
+        {
+            error = "Не вдалося отримати дані матчу.";
+            return;
+        }
+
+        FootballMatch.HomeTeam =
+            FootballMatch.HomeTeam?.Trim() ?? "";
+
+        FootballMatch.AwayTeam =
+            FootballMatch.AwayTeam?.Trim() ?? "";
+
+        if (string.IsNullOrWhiteSpace(FootballMatch.HomeTeam) ||
+            string.IsNullOrWhiteSpace(FootballMatch.AwayTeam))
+        {
+            error = "Вкажіть назви обох команд.";
+            return;
+        }
+
+        if (string.Equals(
+            FootballMatch.HomeTeam,
+            FootballMatch.AwayTeam,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            error = "Домашня та гостьова команди не можуть бути однаковими.";
+            return;
+        }
+
+        if (FootballMatch.MatchDate == default)
+        {
+            error = "Вкажіть правильну дату проведення матчу.";
+            return;
+        }
+
+        if (FootballMatch.Status == MatchStatus.Scheduled &&
+            (FootballMatch.HomeScore != 0 ||
+             FootballMatch.AwayScore != 0))
+        {
+            error = "Запланований матч повинен мати рахунок 0:0.";
+            return;
+        }
+
         using var context = DbFactory.CreateDbContext();
-        context.Attach(FootballMatch!).State = EntityState.Modified;
+
+        context.Attach(FootballMatch).State = EntityState.Modified;
 
         try
         {
             await context.SaveChangesAsync();
         }
+        catch (DbUpdateException ex)
+            when (ex.InnerException is SqliteException
+            { SqliteExtendedErrorCode: 2067 })
+        {
+            error = "Матч між цими командами на цю дату вже існує.";
+            return;
+        }
         catch (DbUpdateConcurrencyException)
         {
-            if (!FootballMatchExists(FootballMatch!.Id))
+            if (!FootballMatchExists(FootballMatch.Id))
             {
-                NavigationManager.NotFound();
+                error = "Матч більше не існує в базі даних.";
             }
             else
             {
-                throw;
+                error = "Не вдалося оновити матч через конфлікт даних.";
             }
+
+            return;
+        }
+        catch (DbUpdateException)
+        {
+            error = "Не вдалося зберегти зміни в базі даних. Спробуйте ще раз.";
+            return;
         }
 
         NavigationManager.NavigateTo("/footballmatches");
@@ -119,6 +260,7 @@ else
     private bool FootballMatchExists(int id)
     {
         using var context = DbFactory.CreateDbContext();
+
         return context.FootballMatches.Any(e => e.Id == id);
     }
 }
