@@ -1,35 +1,127 @@
 
 @page "/footballmatches/details"
+
 @using Microsoft.EntityFrameworkCore
 @using FootballMatches.Models
 @using FootballMatches.Components
+
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Details</PageTitle>
+<PageTitle>Football Match Details</PageTitle>
 
-<h1>Details</h1>
+<h1>Football Match Details</h1>
+<hr />
 
-<div>
-    <h2>FootballMatch</h2>
-    <hr />
+@if (footballmatch is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
 
-    @if (footballmatch is null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        <FootballMatchCard FootballMatch="footballmatch"
-                           Caption="Детальна інформація про матч"
-                           ShowDetails="true" />
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        Match Information
+                    </h5>
+                </div>
 
-        <div>
-            <a href="@($"/footballmatches/edit?id={footballmatch.Id}")">Edit</a> |
-            <a href="/footballmatches">Back to List</a>
+                <div class="card-body">
+                    <dl class="row">
+
+                        <dt class="col-sm-4">
+                            Home Team
+                        </dt>
+                        <dd class="col-sm-8">
+                            @(footballmatch.HomeTeamReference?.Name
+                                ?? footballmatch.HomeTeam)
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Away Team
+                        </dt>
+                        <dd class="col-sm-8">
+                            @(footballmatch.AwayTeamReference?.Name
+                                ?? footballmatch.AwayTeam)
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Home Score
+                        </dt>
+                        <dd class="col-sm-8">
+                            @footballmatch.HomeScore
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Away Score
+                        </dt>
+                        <dd class="col-sm-8">
+                            @footballmatch.AwayScore
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Match Date
+                        </dt>
+                        <dd class="col-sm-8">
+                            @footballmatch.MatchDate
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Stadium
+                        </dt>
+                        <dd class="col-sm-8">
+                            @(footballmatch.StadiumReference?.Name
+                                ?? footballmatch.Stadium
+                                ?? "Not specified")
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Competition
+                        </dt>
+                        <dd class="col-sm-8">
+                            @(string.IsNullOrWhiteSpace(footballmatch.Competition)
+                                ? "Not specified"
+                                : footballmatch.Competition)
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Match Status
+                        </dt>
+                        <dd class="col-sm-8">
+                            @footballmatch.Status
+                        </dd>
+
+                    </dl>
+                </div>
+            </div>
+
+            <h5>Match Card</h5>
+
+            <FootballMatchCard
+                FootballMatch="footballmatch"
+                Caption="Football Match Information"
+                ShowDetails="true" />
+
+            <div class="mt-4 mb-3 d-flex flex-wrap gap-2">
+
+                <a href="@($"/footballmatches/edit?id={footballmatch.Id}")"
+                   class="btn btn-primary animated-btn">
+                    ✏️ Edit
+                </a>
+
+                <a href="/footballmatches"
+                   class="btn btn-secondary animated-btn">
+                    ← Back to List
+                </a>
+
+            </div>
+
         </div>
-    }
-</div>
+    </div>
+}
 
 @code {
     private FootballMatch? footballmatch;
@@ -39,9 +131,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
 
         footballmatch = await context.FootballMatches
+            .Include(m => m.HomeTeamReference)
+            .Include(m => m.AwayTeamReference)
+            .Include(m => m.StadiumReference)
+            .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == Id);
 
         if (footballmatch is null)

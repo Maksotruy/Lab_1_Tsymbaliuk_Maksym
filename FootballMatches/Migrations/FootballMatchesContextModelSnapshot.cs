@@ -31,6 +31,17 @@ namespace FootballMatches.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("AwayTeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("AwayTeamReferenceId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Competition")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("HomeScore")
                         .HasColumnType("INTEGER");
 
@@ -39,6 +50,12 @@ namespace FootballMatches.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("HomeTeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("HomeTeamReferenceId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateOnly>("MatchDate")
                         .HasColumnType("TEXT");
 
@@ -46,15 +63,87 @@ namespace FootballMatches.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("StadiumId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AwayTeamReferenceId");
+
+                    b.HasIndex("HomeTeamReferenceId");
+
+                    b.HasIndex("StadiumId");
+
                     b.HasIndex("HomeTeam", "AwayTeam", "MatchDate")
                         .IsUnique();
 
                     b.ToTable("FootballMatches");
+                });
+
+            modelBuilder.Entity("FootballMatches.Models.Stadium", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Stadium");
+                });
+
+            modelBuilder.Entity("FootballMatches.Models.Team", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Team");
+                });
+
+            modelBuilder.Entity("FootballMatches.Models.FootballMatch", b =>
+                {
+                    b.HasOne("FootballMatches.Models.Team", "AwayTeamReference")
+                        .WithMany()
+                        .HasForeignKey("AwayTeamReferenceId");
+
+                    b.HasOne("FootballMatches.Models.Team", "HomeTeamReference")
+                        .WithMany()
+                        .HasForeignKey("HomeTeamReferenceId");
+
+                    b.HasOne("FootballMatches.Models.Stadium", "StadiumReference")
+                        .WithMany()
+                        .HasForeignKey("StadiumId");
+
+                    b.Navigation("AwayTeamReference");
+
+                    b.Navigation("HomeTeamReference");
+
+                    b.Navigation("StadiumReference");
                 });
 #pragma warning restore 612, 618
         }

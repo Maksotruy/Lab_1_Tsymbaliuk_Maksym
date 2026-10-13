@@ -1,0 +1,164 @@
+
+@page "/stadiums/delete"
+
+@using Microsoft.EntityFrameworkCore
+@using FootballMatches.Models
+
+@inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete Stadium</PageTitle>
+
+<h1>Delete Stadium</h1>
+<hr />
+
+@if (stadium is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+
+            <div class="alert alert-danger" role="alert">
+                <strong>Warning!</strong>
+                Are you sure you want to delete this stadium?
+                This action cannot be undone.
+            </div>
+
+            <div class="card mb-4">
+
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        Stadium Information
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <dl class="row">
+
+                        <dt class="col-sm-4">
+                            Name
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @stadium.Name
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            City
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @stadium.City
+                        </dd>
+
+                    </dl>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger"
+                     role="alert">
+                    @error
+                </div>
+            }
+
+            <EditForm method="post"
+                      Model="stadium"
+                      OnSubmit="DeleteStadium"
+                      FormName="delete"
+                      Enhance
+                      class="mt-4">
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <button type="submit"
+                            class="btn btn-danger animated-btn">
+                        🗑 Delete Stadium
+                    </button>
+
+                    <a href="/stadiums"
+                       class="btn btn-secondary animated-btn">
+                        ← Back to List
+                    </a>
+
+                </div>
+
+            </EditForm>
+
+        </div>
+    </div>
+}
+
+@code {
+    private Stadium? stadium;
+    private string? error;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
+
+        stadium = await context.Stadium
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == Id);
+
+        if (stadium is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+
+    private async Task DeleteStadium(EditContext editContext)
+    {
+        error = null;
+
+        if (stadium is null)
+        {
+            error = "Unable to load stadium data.";
+            return;
+        }
+
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
+
+        var existingStadium = await context.Stadium
+            .FirstOrDefaultAsync(s => s.Id == stadium.Id);
+
+        if (existingStadium is null)
+        {
+            error = "The stadium no longer exists in the database.";
+            return;
+        }
+
+        // Check whether the stadium is used by football matches.
+        var isUsed = await context.FootballMatches
+            .AnyAsync(m => m.StadiumId == existingStadium.Id);
+
+        if (isUsed)
+        {
+            error = "This stadium cannot be deleted because it is used by one or more football matches.";
+            return;
+        }
+
+        context.Stadium.Remove(existingStadium);
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            error = "Unable to delete the stadium. Please try again.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("/stadiums");
+    }
+}

@@ -1,0 +1,171 @@
+
+@page "/teams/delete"
+
+@using Microsoft.EntityFrameworkCore
+@using FootballMatches.Models
+
+@inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete Team</PageTitle>
+
+<h1>Delete Team</h1>
+<hr />
+
+@if (team is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+
+            <div class="alert alert-danger" role="alert">
+                <strong>Warning!</strong>
+                Are you sure you want to delete this team?
+                This action cannot be undone.
+            </div>
+
+            <div class="card mb-4">
+
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        Team Information
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <dl class="row">
+
+                        <dt class="col-sm-4">
+                            Name
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @team.Name
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            Country
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @team.Country
+                        </dd>
+
+                    </dl>
+                </div>
+
+            </div>
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger"
+                     role="alert">
+                    @error
+                </div>
+            }
+
+            <EditForm method="post"
+                      Model="team"
+                      OnSubmit="DeleteTeam"
+                      FormName="delete"
+                      Enhance
+                      class="mt-4">
+
+                <input type="hidden"
+                       name="Id"
+                       value="@team.Id" />
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <button type="submit"
+                            class="btn btn-danger animated-btn">
+                        🗑 Delete Team
+                    </button>
+
+                    <a href="/teams"
+                       class="btn btn-secondary animated-btn">
+                        ← Back to List
+                    </a>
+
+                </div>
+
+            </EditForm>
+
+        </div>
+    </div>
+}
+
+@code {
+    private Team? team;
+    private string? error;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
+
+        team = await context.Team
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == Id);
+
+        if (team is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+
+    private async Task DeleteTeam(EditContext editContext)
+    {
+        error = null;
+
+        if (team is null)
+        {
+            error = "Unable to load team data.";
+            return;
+        }
+
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
+
+        var existingTeam = await context.Team
+            .FirstOrDefaultAsync(t => t.Id == team.Id);
+
+        if (existingTeam is null)
+        {
+            error = "The team no longer exists in the database.";
+            return;
+        }
+
+        // Check whether the team is used by football matches.
+        var isUsed = await context.FootballMatches
+            .AnyAsync(m =>
+                m.HomeTeamId == existingTeam.Id ||
+                m.AwayTeamId == existingTeam.Id);
+
+        if (isUsed)
+        {
+            error = "This team cannot be deleted because it is used by one or more football matches.";
+            return;
+        }
+
+        context.Team.Remove(existingTeam);
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            error = "Unable to delete the team. Please try again.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("/teams");
+    }
+}

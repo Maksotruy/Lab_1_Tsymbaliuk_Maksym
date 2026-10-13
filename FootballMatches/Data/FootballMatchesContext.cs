@@ -26,4 +26,8 @@ public class FootballMatchesContext : DbContext
             })
             .IsUnique();
     }
+
+public DbSet<FootballMatches.Models.Team> Team { get; set; } = default!;
+
+public DbSet<FootballMatches.Models.Stadium> Stadium { get; set; } = default!;
 }

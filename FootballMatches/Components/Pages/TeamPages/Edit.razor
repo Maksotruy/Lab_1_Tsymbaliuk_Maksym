@@ -1,0 +1,163 @@
+
+@page "/teams/edit"
+
+@using Microsoft.EntityFrameworkCore
+@using FootballMatches.Models
+
+@inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Team</PageTitle>
+
+<h1>Edit Team</h1>
+<hr />
+
+@if (Team is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+
+            <EditForm method="post"
+                      Model="Team"
+                      OnValidSubmit="UpdateTeam"
+                      FormName="edit"
+                      Enhance>
+
+                <DataAnnotationsValidator />
+
+                <ValidationSummary class="text-danger"
+                                   role="alert" />
+
+                @if (!string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger"
+                         role="alert">
+                        @error
+                    </div>
+                }
+
+                <input type="hidden"
+                       name="Team.Id"
+                       value="@Team.Id" />
+
+                <div class="mb-3">
+                    <label for="name" class="form-label">
+                        Name <span class="text-danger">*</span>
+                    </label>
+
+                    <InputText id="name"
+                               @bind-Value="Team.Name"
+                               class="form-control"
+                               aria-required="true" />
+
+                    <ValidationMessage
+                        For="() => Team.Name"
+                        class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="country" class="form-label">
+                        Country <span class="text-danger">*</span>
+                    </label>
+
+                    <InputText id="country"
+                               @bind-Value="Team.Country"
+                               class="form-control"
+                               aria-required="true" />
+
+                    <ValidationMessage
+                        For="() => Team.Country"
+                        class="text-danger" />
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-4">
+
+                    <button type="submit"
+                            class="btn btn-success animated-btn">
+                        ✔ Save Changes
+                    </button>
+
+                    <a href="/teams"
+                       class="btn btn-secondary animated-btn">
+                        ← Back to List
+                    </a>
+
+                </div>
+
+            </EditForm>
+
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private Team? Team { get; set; }
+
+    private string? error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
+
+        Team ??= await context.Team
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == Id);
+
+        if (Team is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+
+    private async Task UpdateTeam()
+    {
+        error = null;
+
+        if (Team is null)
+        {
+            error = "Unable to load team data.";
+            return;
+        }
+
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
+
+        var existingTeam = await context.Team
+            .FirstOrDefaultAsync(t => t.Id == Team.Id);
+
+        if (existingTeam is null)
+        {
+            error = "The team no longer exists in the database.";
+            return;
+        }
+
+        existingTeam.Name = Team.Name;
+        existingTeam.Country = Team.Country;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            error = "Unable to update the team because its data has changed.";
+            return;
+        }
+        catch (DbUpdateException)
+        {
+            error = "Unable to save changes. Please try again.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("/teams");
+    }
+}

@@ -1,54 +1,155 @@
 
 @page "/footballmatches/delete"
+
 @using Microsoft.EntityFrameworkCore
 @using FootballMatches.Models
 @using FootballMatches.Components
+@using Microsoft.AspNetCore.Components.Forms
+
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Delete</PageTitle>
+<PageTitle>Delete Football Match</PageTitle>
 
-<h1>Delete</h1>
+<h1>Delete Football Match</h1>
+<hr />
 
-<p>Are you sure you want to delete this?</p>
+@if (footballmatch is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
 
-<div>
-    <h2>FootballMatch</h2>
-    <hr />
+            <div class="alert alert-danger" role="alert">
+                <strong>Warning!</strong>
+                Are you sure you want to delete this football match?
+                This action cannot be undone.
+            </div>
 
-    @if (footballmatch is null)
-    {
-        <p><em>Loading...</em></p>
-    }
-    else
-    {
-        <FootballMatchCard FootballMatch="footballmatch"
-                           Caption="Матч, який буде видалено"
-                           ShowDetails="false" />
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Match Information</h5>
+                </div>
 
-        <EditForm method="post"
-                  Model="footballmatch"
-                  OnValidSubmit="DeleteFootballMatch"
-                  FormName="delete"
-                  Enhance>
-            <input type="hidden" name="Id" value="@footballmatch.Id" />
-            <button type="submit" class="btn btn-danger">Delete</button> |
-            <a href="/footballmatches">Back to List</a>
-        </EditForm>
-    }
-</div>
+                <div class="card-body">
+                    <dl class="row">
+
+                        <dt class="col-sm-4">Home Team</dt>
+                        <dd class="col-sm-8">
+                            @(footballmatch.HomeTeamReference?.Name
+                                ?? footballmatch.HomeTeam)
+                        </dd>
+
+                        <dt class="col-sm-4">Away Team</dt>
+                        <dd class="col-sm-8">
+                            @(footballmatch.AwayTeamReference?.Name
+                                ?? footballmatch.AwayTeam)
+                        </dd>
+
+                        <dt class="col-sm-4">Home Score</dt>
+                        <dd class="col-sm-8">
+                            @footballmatch.HomeScore
+                        </dd>
+
+                        <dt class="col-sm-4">Away Score</dt>
+                        <dd class="col-sm-8">
+                            @footballmatch.AwayScore
+                        </dd>
+
+                        <dt class="col-sm-4">Match Date</dt>
+                        <dd class="col-sm-8">
+                            @footballmatch.MatchDate
+                        </dd>
+
+                        <dt class="col-sm-4">Stadium</dt>
+                        <dd class="col-sm-8">
+                            @(footballmatch.StadiumReference?.Name
+                                ?? footballmatch.Stadium
+                                ?? "Not specified")
+                        </dd>
+
+                        <dt class="col-sm-4">Competition</dt>
+                        <dd class="col-sm-8">
+                            @(string.IsNullOrWhiteSpace(footballmatch.Competition)
+                                ? "Not specified"
+                                : footballmatch.Competition)
+                        </dd>
+
+                        <dt class="col-sm-4">Match Status</dt>
+                        <dd class="col-sm-8">
+                            @footballmatch.Status
+                        </dd>
+
+                    </dl>
+                </div>
+            </div>
+
+            <h5>Match Card</h5>
+
+            <FootballMatchCard
+                FootballMatch="footballmatch"
+                Caption="Match Selected for Deletion"
+                ShowDetails="false" />
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger mt-3"
+                     role="alert">
+                    @error
+                </div>
+            }
+
+            <EditForm method="post"
+                      Model="footballmatch"
+                      OnSubmit="DeleteFootballMatch"
+                      FormName="delete"
+                      Enhance
+                      class="mt-4">
+
+                <input type="hidden"
+                       name="Id"
+                       value="@footballmatch.Id" />
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
+
+                    <button type="submit"
+                            class="btn btn-danger animated-btn">
+                        🗑 Delete Match
+                    </button>
+
+                    <a href="/footballmatches"
+                       class="btn btn-secondary animated-btn">
+                        ← Back to List
+                    </a>
+
+                </div>
+
+            </EditForm>
+
+        </div>
+    </div>
+}
 
 @code {
     private FootballMatch? footballmatch;
+    private string? error;
 
     [SupplyParameterFromQuery]
     private int Id { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        using var context = DbFactory.CreateDbContext();
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
 
         footballmatch = await context.FootballMatches
+            .Include(m => m.HomeTeamReference)
+            .Include(m => m.AwayTeamReference)
+            .Include(m => m.StadiumReference)
+            .AsNoTracking()
             .FirstOrDefaultAsync(m => m.Id == Id);
 
         if (footballmatch is null)
@@ -57,21 +158,33 @@
         }
     }
 
-    private async Task DeleteFootballMatch()
+    private async Task DeleteFootballMatch(EditContext editContext)
     {
-        using var context = DbFactory.CreateDbContext();
+        error = null;
+
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
 
         var match = await context.FootballMatches
             .FirstOrDefaultAsync(m => m.Id == Id);
 
         if (match is null)
         {
-            NavigationManager.NotFound();
+            error = "The football match no longer exists.";
             return;
         }
 
         context.FootballMatches.Remove(match);
-        await context.SaveChangesAsync();
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateException)
+        {
+            error = "Unable to delete the match. Please try again.";
+            return;
+        }
 
         NavigationManager.NavigateTo("/footballmatches");
     }

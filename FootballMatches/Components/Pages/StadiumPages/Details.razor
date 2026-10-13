@@ -1,0 +1,94 @@
+
+@page "/stadiums/details"
+
+@using Microsoft.EntityFrameworkCore
+@using FootballMatches.Models
+
+@inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Stadium Details</PageTitle>
+
+<h1>Stadium Details</h1>
+<hr />
+
+@if (stadium is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-8">
+
+            <div class="card mb-4">
+
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        Stadium Information
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    <dl class="row">
+
+                        <dt class="col-sm-4">
+                            Name
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @stadium.Name
+                        </dd>
+
+                        <dt class="col-sm-4">
+                            City
+                        </dt>
+
+                        <dd class="col-sm-8">
+                            @stadium.City
+                        </dd>
+
+                    </dl>
+                </div>
+
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+
+                <a href="@($"/stadiums/edit?id={stadium.Id}")"
+                   class="btn btn-primary animated-btn">
+                    ✏️ Edit
+                </a>
+
+                <a href="/stadiums"
+                   class="btn btn-secondary animated-btn">
+                    ← Back to List
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+    private Stadium? stadium;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
+
+        stadium = await context.Stadium
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == Id);
+
+        if (stadium is null)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+}

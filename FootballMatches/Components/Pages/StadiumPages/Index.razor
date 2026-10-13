@@ -1,0 +1,146 @@
+
+@page "/stadiums"
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using FootballMatches.Models
+@using FootballMatches.Data
+
+@implements IAsyncDisposable
+
+@inject IDbContextFactory<FootballMatchesContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Stadiums</PageTitle>
+
+<h1>Stadium List</h1>
+<hr />
+
+<div class="mb-4">
+    <a href="/stadiums/create"
+       class="btn btn-success animated-btn">
+        ➕ Add Stadium
+    </a>
+</div>
+
+@if (context is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="table-responsive">
+
+        <QuickGrid Class="table table-striped table-hover align-middle"
+                   Items="stadiums">
+
+            <PropertyColumn
+                Property="stadium => stadium.Name"
+                Title="Stadium Name" />
+
+            <PropertyColumn
+                Property="stadium => stadium.City"
+                Title="City" />
+
+            <TemplateColumn Title="Actions"
+                            Context="stadium">
+
+                <div class="d-flex flex-nowrap gap-2">
+
+                    <a href="@($"/stadiums/edit?id={stadium.Id}")"
+                       class="btn btn-sm btn-primary animated-btn text-nowrap">
+                        ✏️ Edit
+                    </a>
+
+                    <a href="@($"/stadiums/details?id={stadium.Id}")"
+                       class="btn btn-sm animated-btn text-white text-nowrap"
+                       style="background-color: #fd7e14; border-color: #fd7e14;">
+                        👁 Details
+                    </a>
+
+                    <a href="@($"/stadiums/delete?id={stadium.Id}")"
+                       class="btn btn-sm btn-danger animated-btn text-nowrap">
+                        🗑 Delete
+                    </a>
+
+                </div>
+
+            </TemplateColumn>
+
+        </QuickGrid>
+
+    </div>
+
+    <div class="d-flex justify-content-start align-items-center gap-3 mt-4 mb-3">
+
+        @if (currentPage > 1)
+        {
+            <a href="@($"/stadiums?page={currentPage - 1}")"
+               class="btn btn-warning animated-btn">
+                ← Previous
+            </a>
+        }
+
+        <span class="fw-semibold text-center"
+              style="min-width: 110px; white-space: nowrap;">
+            Page @currentPage of @totalPages
+        </span>
+
+        @if (currentPage < totalPages)
+        {
+            <a href="@($"/stadiums?page={currentPage + 1}")"
+               class="btn btn-warning animated-btn">
+                Next →
+            </a>
+        }
+
+    </div>
+}
+
+@code {
+    private FootballMatchesContext? context;
+
+    private IQueryable<Stadium> stadiums =
+        Enumerable.Empty<Stadium>().AsQueryable();
+
+    private const int pageSize = 10;
+
+    private int currentPage = 1;
+    private int totalPages = 1;
+
+    [SupplyParameterFromQuery(Name = "page")]
+    private int? Page { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (context is not null)
+        {
+            await context.DisposeAsync();
+        }
+
+        context = await DbFactory.CreateDbContextAsync();
+
+        int totalStadiums = await context.Stadium.CountAsync();
+
+        totalPages = Math.Max(
+            1,
+            (int)Math.Ceiling(totalStadiums / (double)pageSize)
+        );
+
+        currentPage = Math.Clamp(Page ?? 1, 1, totalPages);
+
+        stadiums = context.Stadium
+            .AsNoTracking()
+            .OrderBy(s => s.Id)
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (context is not null)
+        {
+            await context.DisposeAsync();
+        }
+    }
+}

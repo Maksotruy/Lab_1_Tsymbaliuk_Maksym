@@ -1,60 +1,171 @@
+
 @page "/footballmatches"
+
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using FootballMatches.Models
 @using FootballMatches.Data
+
 @implements IAsyncDisposable
-@inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 
-<PageTitle>Index</PageTitle>
+@inject IDbContextFactory<FootballMatchesContext> DbFactory
 
-<h1>Index</h1>
+<PageTitle>Football Matches</PageTitle>
 
-<p>
-    <a href="footballmatches/create">Create New</a>
-</p>
+<h1>Football Match List</h1>
+<hr />
 
-<QuickGrid Class="table" Items="@context.FootballMatches.Skip((CurrentPage - 1) * PageSize).Take(PageSize)">
-    <PropertyColumn Property="footballmatch => footballmatch.HomeTeam" />
-    <PropertyColumn Property="footballmatch => footballmatch.AwayTeam" />
-    <PropertyColumn Property="footballmatch => footballmatch.HomeScore" />
-    <PropertyColumn Property="footballmatch => footballmatch.AwayScore" />
-    <PropertyColumn Property="footballmatch => footballmatch.MatchDate" />
-    <PropertyColumn Property="footballmatch => footballmatch.Stadium" />
-    <PropertyColumn Property="footballmatch => footballmatch.Status" />
+<div class="mb-4">
+    <a href="/footballmatches/create"
+       class="btn btn-success animated-btn">
+        ➕ Add Football Match
+    </a>
+</div>
 
-    <TemplateColumn Context="footballmatch">
-        <a href="@($"footballmatches/edit?id={footballmatch.Id}")">Edit</a> |
-        <a href="@($"footballmatches/details?id={footballmatch.Id}")">Details</a> |
-        <a href="@($"footballmatches/delete?id={footballmatch.Id}")">Delete</a>
-    </TemplateColumn>
-</QuickGrid>
-
-@if (CurrentPage > 1)
+@if (context is null)
 {
-    <a href="@($"footballmatches?page={CurrentPage - 1}")">Назад</a>
+    <p><em>Loading...</em></p>
 }
-
-<span class="mx-2">Сторінка @CurrentPage</span>
-
-@if (context.FootballMatches.Count() > CurrentPage * PageSize)
+else
 {
-    <a href="@($"footballmatches?page={CurrentPage + 1}")">Далі</a>
+    <div class="table-responsive football-table">
+
+        <QuickGrid Class="table table-striped table-hover align-middle"
+                   Items="matches">
+
+            <PropertyColumn
+                Property="match => match.HomeTeam"
+                Title="Home Team" />
+
+            <PropertyColumn
+                Property="match => match.AwayTeam"
+                Title="Away Team" />
+
+            <PropertyColumn
+                Property="match => match.HomeScore"
+                Title="Home Score" />
+
+            <PropertyColumn
+                Property="match => match.AwayScore"
+                Title="Away Score" />
+
+            <PropertyColumn
+                Property="match => match.MatchDate"
+                Title="Match Date" />
+
+            <PropertyColumn
+                Property="match => match.Stadium"
+                Title="Stadium" />
+
+            <TemplateColumn Title="Competition" Context="match">
+                @(string.IsNullOrWhiteSpace(match.Competition)
+                    ? "Not specified"
+                    : match.Competition)
+            </TemplateColumn>
+
+            <PropertyColumn
+                Property="match => match.Status"
+                Title="Status" />
+
+            <TemplateColumn Title="Actions" Context="match">
+
+                <div class="d-flex flex-nowrap align-items-center gap-1">
+
+                    <a href="@($"/footballmatches/edit?id={match.Id}")"
+                       class="btn btn-sm btn-primary animated-btn text-nowrap">
+                        ✏️ Edit
+                    </a>
+
+                    <a href="@($"/footballmatches/details?id={match.Id}")"
+                       class="btn btn-sm animated-btn text-white text-nowrap"
+                       style="background-color: #fd7e14; border-color: #fd7e14;">
+                        👁 Details
+                    </a>
+
+                    <a href="@($"/footballmatches/delete?id={match.Id}")"
+                       class="btn btn-sm btn-danger animated-btn text-nowrap">
+                        🗑 Delete
+                    </a>
+
+                </div>
+
+            </TemplateColumn>
+
+        </QuickGrid>
+
+    </div>
+
+    <div class="d-flex justify-content-start align-items-center gap-3 mt-4 mb-3">
+
+        @if (currentPage > 1)
+        {
+            <a href="@($"/footballmatches?page={currentPage - 1}")"
+               class="btn btn-warning animated-btn">
+                ← Previous
+            </a>
+        }
+
+        <span class="fw-semibold text-center"
+              style="min-width: 110px; white-space: nowrap;">
+            Page @currentPage of @totalPages
+        </span>
+
+        @if (currentPage < totalPages)
+        {
+            <a href="@($"/footballmatches?page={currentPage + 1}")"
+               class="btn btn-warning animated-btn">
+                Next →
+            </a>
+        }
+
+    </div>
 }
 
 @code {
-    private FootballMatchesContext context = default!;
+    private FootballMatchesContext? context;
 
-    protected override void OnInitialized()
+    private IQueryable<FootballMatch> matches =
+        Enumerable.Empty<FootballMatch>().AsQueryable();
+
+    private const int pageSize = 10;
+
+    private int currentPage = 1;
+    private int totalPages = 1;
+
+    [SupplyParameterFromQuery(Name = "page")]
+    private int? Page { get; set; }
+
+    protected override async Task OnParametersSetAsync()
     {
-        context = DbFactory.CreateDbContext();
+        if (context is not null)
+        {
+            await context.DisposeAsync();
+        }
+
+        context = await DbFactory.CreateDbContextAsync();
+
+        int totalMatches =
+            await context.FootballMatches.CountAsync();
+
+        totalPages = Math.Max(
+            1,
+            (int)Math.Ceiling(totalMatches / (double)pageSize)
+        );
+
+        currentPage = Math.Clamp(Page ?? 1, 1, totalPages);
+
+        matches = context.FootballMatches
+            .AsNoTracking()
+            .OrderBy(m => m.Id)
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize);
     }
 
-    public async ValueTask DisposeAsync() => await context.DisposeAsync();
-    private const int PageSize = 10;
-
-    [SupplyParameterFromQuery]
-    public int? Page { get; set; }
-
-    private int CurrentPage => Page is > 0 ? Page.Value : 1;
+    public async ValueTask DisposeAsync()
+    {
+        if (context is not null)
+        {
+            await context.DisposeAsync();
+        }
+    }
 }
