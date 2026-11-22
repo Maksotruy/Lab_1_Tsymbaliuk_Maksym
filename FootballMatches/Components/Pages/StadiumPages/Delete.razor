@@ -7,14 +7,14 @@
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Delete Stadium</PageTitle>
+<PageTitle>Видалення стадіону | FootballMatches</PageTitle>
 
-<h1>Delete Stadium</h1>
+<h1>Видалення стадіону</h1>
 <hr />
 
 @if (stadium is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Завантаження...</em></p>
 }
 else
 {
@@ -22,16 +22,16 @@ else
         <div class="col-md-8">
 
             <div class="alert alert-danger" role="alert">
-                <strong>Warning!</strong>
-                Are you sure you want to delete this stadium?
-                This action cannot be undone.
+                <strong>Увага!</strong>
+                Ви впевнені, що хочете видалити цей стадіон?
+                Цю дію неможливо скасувати.
             </div>
 
             <div class="card mb-4">
 
                 <div class="card-header">
                     <h5 class="mb-0">
-                        Stadium Information
+                        Інформація про стадіон
                     </h5>
                 </div>
 
@@ -39,7 +39,7 @@ else
                     <dl class="row">
 
                         <dt class="col-sm-4">
-                            Name
+                            Назва стадіону
                         </dt>
 
                         <dd class="col-sm-8">
@@ -47,7 +47,7 @@ else
                         </dd>
 
                         <dt class="col-sm-4">
-                            City
+                            Місто
                         </dt>
 
                         <dd class="col-sm-8">
@@ -77,12 +77,12 @@ else
 
                     <button type="submit"
                             class="btn btn-danger animated-btn">
-                        🗑 Delete Stadium
+                        🗑 Видалити стадіон
                     </button>
 
                     <a href="/stadiums"
                        class="btn btn-secondary animated-btn">
-                        ← Back to List
+                        ← Повернутися до списку
                     </a>
 
                 </div>
@@ -121,7 +121,7 @@ else
 
         if (stadium is null)
         {
-            error = "Unable to load stadium data.";
+            error = "Не вдалося завантажити дані стадіону.";
             return;
         }
 
@@ -133,17 +133,17 @@ else
 
         if (existingStadium is null)
         {
-            error = "The stadium no longer exists in the database.";
+            error = "Цього стадіону більше немає в базі даних.";
             return;
         }
 
-        // Check whether the stadium is used by football matches.
+        // Перевірка, чи використовується стадіон у футбольних матчах.
         var isUsed = await context.FootballMatches
             .AnyAsync(m => m.StadiumId == existingStadium.Id);
 
         if (isUsed)
         {
-            error = "This stadium cannot be deleted because it is used by one or more football matches.";
+            error = "Неможливо видалити цей стадіон, оскільки він використовується в одному або декількох футбольних матчах.";
             return;
         }
 
@@ -155,7 +155,7 @@ else
         }
         catch (DbUpdateException)
         {
-            error = "Unable to delete the stadium. Please try again.";
+            error = "Не вдалося видалити стадіон. Спробуйте ще раз.";
             return;
         }
 

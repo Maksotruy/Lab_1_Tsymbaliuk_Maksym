@@ -7,130 +7,260 @@
 
 @inject IDbContextFactory<FootballMatchesContext> DbFactory
 
-<PageTitle>Match Statistics | FootballMatches</PageTitle>
+<PageTitle>Статистика матчів | FootballMatches</PageTitle>
 
-<div class="summary-page">
-    <div class="summary-header">
+<div class="statistics-page">
+
+    <div class="statistics-header">
         <div>
-            <h1>Match Statistics</h1>
-            <p>Explore football match statistics, team performance and monthly trends.</p>
+            <h1>Статистика матчів</h1>
+            <p>
+                Загальний огляд футбольних результатів,
+                команд та активності за місяцями.
+            </p>
         </div>
-        <span class="summary-label">OVERVIEW</span>
+
+        <span class="statistics-header-badge">
+            ⚽ ФУТБОЛЬНА АНАЛІТИКА
+        </span>
     </div>
 
     @if (loading)
     {
-        <div class="summary-empty">Loading statistics...</div>
+        <div class="statistics-empty">
+            <div class="spinner-border text-primary"
+                 role="status">
+                <span class="visually-hidden">
+                    Завантаження...
+                </span>
+            </div>
+
+            <p class="mt-3 mb-0">
+                Завантаження статистики...
+            </p>
+        </div>
     }
     else if (total.Count == 0)
     {
-        <div class="summary-empty">
-            <h3>No matches available</h3>
-            <p>Add your first football match to view statistics.</p>
-            <a class="summary-button" href="/footballmatches">
-                View Matches
+        <div class="statistics-empty">
+            <div class="statistics-empty-icon">⚽</div>
+
+            <h3>Матчів поки немає</h3>
+
+            <p>
+                Додайте перший футбольний матч,
+                щоб побачити статистику.
+            </p>
+
+            <a href="/footballmatches"
+               class="btn btn-primary animated-btn">
+                Переглянути матчі
             </a>
         </div>
     }
     else
     {
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">⚽</div>
-                <div class="stat-label">Total Matches</div>
-                <div class="stat-value">@total.Count</div>
-                <div class="stat-description">Matches in the database</div>
-            </div>
+        <div class="statistics-grid">
 
-            <div class="stat-card">
-                <div class="stat-icon">🥅</div>
-                <div class="stat-label">Home Goals</div>
-                <div class="stat-value">@total.Total</div>
-                <div class="stat-description">Goals scored by home teams</div>
-            </div>
+            <div class="statistics-card">
+                <div class="statistics-card-icon icon-blue">⚽</div>
 
-            <div class="stat-card">
-                <div class="stat-icon">🏆</div>
-                <div class="stat-label">Home Teams</div>
-                <div class="stat-value">@byTeam.Count</div>
-                <div class="stat-description">Teams appearing as hosts</div>
-            </div>
+                <div class="statistics-card-label">
+                    Усього матчів
+                </div>
 
-            <div class="stat-card">
-                <div class="stat-icon">📅</div>
-                <div class="stat-label">Active Months</div>
-                <div class="stat-value">@byMonth.Count</div>
-                <div class="stat-description">Months with recorded matches</div>
-            </div>
-        </div>
+                <div class="statistics-card-value">
+                    @total.Count
+                </div>
 
-        <section class="summary-section">
-            <div class="section-heading">
-                <div>
-                    <h2>Team Statistics</h2>
-                    <p>Match count and goals scored by each home team.</p>
+                <div class="statistics-card-description">
+                    Матчі в базі даних
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="summary-table">
+            <div class="statistics-card">
+                <div class="statistics-card-icon icon-green">🥅</div>
+
+                <div class="statistics-card-label">
+                    Голи господарів
+                </div>
+
+                <div class="statistics-card-value">
+                    @total.Total
+                </div>
+
+                <div class="statistics-card-description">
+                    Загальна кількість забитих голів
+                </div>
+            </div>
+
+            <div class="statistics-card">
+                <div class="statistics-card-icon icon-orange">🏆</div>
+
+                <div class="statistics-card-label">
+                    Домашні команди
+                </div>
+
+                <div class="statistics-card-value">
+                    @byTeam.Count
+                </div>
+
+                <div class="statistics-card-description">
+                    Команди, які грали вдома
+                </div>
+            </div>
+
+            <div class="statistics-card">
+                <div class="statistics-card-icon icon-purple">📅</div>
+
+                <div class="statistics-card-label">
+                    Активні місяці
+                </div>
+
+                <div class="statistics-card-value">
+                    @byMonth.Count
+                </div>
+
+                <div class="statistics-card-description">
+                    Місяці з проведеними матчами
+                </div>
+            </div>
+
+        </div>
+
+        <section class="statistics-section">
+
+            <div class="statistics-section-heading">
+                <div>
+                    <h2>🏆 Статистика команд</h2>
+
+                    <p>
+                        Кількість матчів та голів,
+                        забитих домашніми командами.
+                    </p>
+                </div>
+
+                <span class="statistics-count">
+                    @byTeam.Count команд
+                </span>
+            </div>
+
+            <div class="statistics-table-wrapper">
+
+                <table class="statistics-table">
                     <thead>
                         <tr>
-                            <th>Home Team</th>
-                            <th>Matches</th>
-                            <th>Goals Scored</th>
+                            <th>№</th>
+                            <th>Домашня команда</th>
+                            <th>Матчі</th>
+                            <th>Забиті голи</th>
                         </tr>
                     </thead>
+
                     <tbody>
-                        @foreach (var row in byTeam)
+                        @for (int i = 0; i < byTeam.Count; i++)
                         {
+                            var row = byTeam[i];
+
                             <tr>
-                                <td class="team-name">@row.Name</td>
-                                <td>@row.Count</td>
-                                <td>@row.Total</td>
+                                <td class="statistics-position">
+                                    @(i + 1)
+                                </td>
+
+                                <td>
+                                    <span class="statistics-team-name">
+                                        @row.Name
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="statistics-match-count">
+                                        @row.Count
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="statistics-goal-count">
+                                        @row.Total
+                                    </span>
+                                </td>
                             </tr>
                         }
-                        <tr class="total-row">
-                            <td>Total</td>
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <td colspan="2">
+                                Усього
+                            </td>
+
                             <td>@total.Count</td>
                             <td>@total.Total</td>
                         </tr>
-                    </tbody>
+                    </tfoot>
                 </table>
+
             </div>
         </section>
 
-        <section class="summary-section">
-            <div class="section-heading">
+        <section class="statistics-section">
+
+            <div class="statistics-section-heading">
                 <div>
-                    <h2>Monthly Statistics</h2>
-                    <p>Football match activity grouped by month.</p>
+                    <h2>📅 Статистика за місяцями</h2>
+
+                    <p>
+                        Динаміка футбольних матчів
+                        за календарними місяцями.
+                    </p>
                 </div>
+
+                <span class="statistics-count">
+                    @byMonth.Count періодів
+                </span>
             </div>
 
-            <div class="table-responsive">
-                <table class="summary-table">
+            <div class="statistics-table-wrapper">
+
+                <table class="statistics-table">
                     <thead>
                         <tr>
-                            <th>Period</th>
-                            <th>Matches</th>
-                            <th>Goals Scored</th>
+                            <th>Період</th>
+                            <th>Матчі</th>
+                            <th>Забиті голи</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         @foreach (var row in byMonth)
                         {
                             <tr>
-                                <td class="team-name">@row.Name</td>
-                                <td>@row.Count</td>
-                                <td>@row.Total</td>
+                                <td>
+                                    <span class="statistics-team-name">
+                                        @row.Name
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="statistics-match-count">
+                                        @row.Count
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="statistics-goal-count">
+                                        @row.Total
+                                    </span>
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
+
             </div>
         </section>
     }
+
 </div>
 
 @code {
@@ -139,7 +269,7 @@
     private List<SummaryRow> byTeam = new();
     private List<SummaryRow> byMonth = new();
 
-    private SummaryRow total = new("Total", 0, 0);
+    private SummaryRow total = new("Усього", 0, 0);
 
     protected override async Task OnInitializedAsync()
     {

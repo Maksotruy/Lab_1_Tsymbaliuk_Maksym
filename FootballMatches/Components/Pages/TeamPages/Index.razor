@@ -2,124 +2,195 @@
 @page "/teams"
 
 @using Microsoft.EntityFrameworkCore
-@using Microsoft.AspNetCore.Components.QuickGrid
 @using FootballMatches.Models
 @using FootballMatches.Data
 
-@implements IAsyncDisposable
-
 @inject IDbContextFactory<FootballMatchesContext> DbFactory
 
-<PageTitle>Teams</PageTitle>
+<PageTitle>Команди | FootballMatches</PageTitle>
 
-<h1>Team List</h1>
-<hr />
+<div class="container-fluid px-0">
 
-<div class="mb-4">
-    <a href="/teams/create"
-       class="btn btn-success animated-btn">
-        ➕ Add Team
-    </a>
-</div>
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
 
-@if (context is null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <div class="table-responsive">
+        <div>
+            <h1 class="fw-bold mb-2">
+                Список команд
+            </h1>
 
-        <QuickGrid Class="table table-striped table-hover align-middle"
-                   Items="teams">
+            <p class="text-muted mb-0">
+                Перегляд та керування футбольними командами.
+            </p>
+        </div>
 
-            <PropertyColumn
-                Property="team => team.Name"
-                Title="Team Name" />
+        <a href="/teams/create"
+           class="btn btn-success animated-btn">
+            ➕ Додати команду
+        </a>
 
-            <PropertyColumn
-                Property="team => team.Country"
-                Title="Country" />
+    </div>
 
-            <TemplateColumn Title="Actions"
-                            Context="team">
+    @if (!loaded)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"
+                 role="status">
+                <span class="visually-hidden">
+                    Завантаження...
+                </span>
+            </div>
+        </div>
+    }
+    else if (totalTeams == 0)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
 
-                <div class="d-flex flex-nowrap gap-2">
+                <h3>Команд не знайдено</h3>
 
-                    <a href="@($"/teams/edit?id={team.Id}")"
-                       class="btn btn-sm btn-primary animated-btn text-nowrap">
-                        ✏️ Edit
-                    </a>
+                <p class="text-muted">
+                    У базі даних поки немає жодної команди.
+                </p>
 
-                    <a href="@($"/teams/details?id={team.Id}")"
-                       class="btn btn-sm animated-btn text-white text-nowrap"
-                       style="background-color: #fd7e14; border-color: #fd7e14;">
-                        👁 Details
-                    </a>
+                <a href="/teams/create"
+                   class="btn btn-success animated-btn">
+                    ➕ Додати команду
+                </a>
 
-                    <a href="@($"/teams/delete?id={team.Id}")"
-                       class="btn btn-sm btn-danger animated-btn text-nowrap">
-                        🗑 Delete
-                    </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-3 p-md-4">
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+
+                    <h5 class="fw-bold mb-0">
+                        Перелік команд
+                    </h5>
+
+                    <span class="badge bg-primary rounded-pill">
+                        Усього: @totalTeams
+                    </span>
 
                 </div>
 
-            </TemplateColumn>
+                <div class="row g-3">
 
-        </QuickGrid>
+                    @foreach (var team in teamList)
+                    {
+                        <div class="col-12 col-md-6 col-xl-4">
 
-    </div>
+                            <div class="card border shadow-sm h-100">
+                                <div class="card-body p-3 d-flex flex-column">
 
-    <div class="d-flex justify-content-start align-items-center gap-3 mt-4 mb-3">
+                                    <h5 class="fw-bold text-break mb-3">
+                                        @team.Name
+                                    </h5>
 
-        @if (currentPage > 1)
-        {
-            <a href="@($"/teams?page={currentPage - 1}")"
-               class="btn btn-warning animated-btn">
-                ← Previous
-            </a>
-        }
+                                    <div class="mb-3">
+                                        <span class="text-muted">
+                                            Країна:
+                                        </span>
 
-        <span class="fw-semibold text-center"
-              style="min-width: 110px; white-space: nowrap;">
-            Page @currentPage of @totalPages
-        </span>
+                                        <span class="fw-semibold text-break">
+                                            @team.Country
+                                        </span>
+                                    </div>
 
-        @if (currentPage < totalPages)
-        {
-            <a href="@($"/teams?page={currentPage + 1}")"
-               class="btn btn-warning animated-btn">
-                Next →
-            </a>
-        }
+                                    <div class="d-flex flex-wrap gap-2 mt-auto">
 
-    </div>
-}
+                                        <a href="@($"/teams/edit?id={team.Id}")"
+                                           class="btn btn-sm btn-primary animated-btn flex-fill">
+                                            ✏️ Редагувати
+                                        </a>
+
+                                        <a href="@($"/teams/details?id={team.Id}")"
+                                           class="btn btn-sm animated-btn text-white flex-fill"
+                                           style="background-color: #fd7e14; border-color: #fd7e14;">
+                                            👁 Деталі
+                                        </a>
+
+                                        <a href="@($"/teams/delete?id={team.Id}")"
+                                           class="btn btn-sm btn-danger animated-btn w-100">
+                                            🗑 Видалити
+                                        </a>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4 mb-3">
+
+            <span class="text-muted small">
+                Сторінка @currentPage із @totalPages
+            </span>
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+
+                @if (currentPage > 1)
+                {
+                    <a href="@($"/teams?page={currentPage - 1}")"
+                       data-enhance-nav="false"
+                       class="btn btn-warning animated-btn">
+                        ← Назад
+                    </a>
+                }
+
+                <span class="badge bg-light text-dark border px-3 py-2">
+                    @currentPage / @totalPages
+                </span>
+
+                @if (currentPage < totalPages)
+                {
+                    <a href="@($"/teams?page={currentPage + 1}")"
+                       data-enhance-nav="false"
+                       class="btn btn-warning animated-btn">
+                        Далі →
+                    </a>
+                }
+
+            </div>
+
+        </div>
+    }
+
+</div>
 
 @code {
-    private FootballMatchesContext? context;
+    private List<Team> teamList = new();
 
-    private IQueryable<Team> teams =
-        Enumerable.Empty<Team>().AsQueryable();
-
-    private const int pageSize = 10;
+    // 12 команд на одній сторінці
+    private const int pageSize = 12;
 
     private int currentPage = 1;
     private int totalPages = 1;
+    private int totalTeams = 0;
+
+    private bool loaded = false;
 
     [SupplyParameterFromQuery(Name = "page")]
     private int? Page { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (context is not null)
-        {
-            await context.DisposeAsync();
-        }
+        loaded = false;
 
-        context = await DbFactory.CreateDbContextAsync();
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
 
-        int totalTeams = await context.Team.CountAsync();
+        totalTeams = await context.Team.CountAsync();
 
         totalPages = Math.Max(
             1,
@@ -128,18 +199,13 @@ else
 
         currentPage = Math.Clamp(Page ?? 1, 1, totalPages);
 
-        teams = context.Team
+        teamList = await context.Team
             .AsNoTracking()
             .OrderBy(t => t.Id)
             .Skip((currentPage - 1) * pageSize)
-            .Take(pageSize);
-    }
+            .Take(pageSize)
+            .ToListAsync();
 
-    public async ValueTask DisposeAsync()
-    {
-        if (context is not null)
-        {
-            await context.DisposeAsync();
-        }
+        loaded = true;
     }
 }

@@ -7,9 +7,9 @@
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Create Stadium</PageTitle>
+<PageTitle>Додати стадіон | FootballMatches</PageTitle>
 
-<h1>Create Stadium</h1>
+<h1>Додати стадіон</h1>
 <hr />
 
 <div class="row">
@@ -28,7 +28,8 @@
 
             <div class="mb-3">
                 <label for="name" class="form-label">
-                    Name <span class="text-danger">*</span>
+                    Назва стадіону
+                    <span class="text-danger">*</span>
                 </label>
 
                 <InputText id="name"
@@ -43,7 +44,8 @@
 
             <div class="mb-3">
                 <label for="city" class="form-label">
-                    City <span class="text-danger">*</span>
+                    Місто
+                    <span class="text-danger">*</span>
                 </label>
 
                 <InputText id="city"
@@ -60,12 +62,12 @@
 
                 <button type="submit"
                         class="btn btn-success animated-btn">
-                    ✔ Create Stadium
+                    ✔ Додати стадіон
                 </button>
 
                 <a href="/stadiums"
                    class="btn btn-secondary animated-btn">
-                    ← Back to List
+                    ← Повернутися до списку
                 </a>
 
             </div>
@@ -84,7 +86,7 @@
         Stadium ??= new();
     }
 
-    // Save the new stadium to the database.
+    // Збереження нового стадіону в базі даних.
     private async Task AddStadium()
     {
         using var context = DbFactory.CreateDbContext();

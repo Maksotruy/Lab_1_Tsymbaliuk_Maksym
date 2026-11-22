@@ -7,9 +7,9 @@
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Create Team</PageTitle>
+<PageTitle>Додати команду | FootballMatches</PageTitle>
 
-<h1>Create Team</h1>
+<h1>Додати команду</h1>
 <hr />
 
 <div class="row">
@@ -36,7 +36,8 @@
 
             <div class="mb-3">
                 <label for="name" class="form-label">
-                    Name <span class="text-danger">*</span>
+                    Назва команди
+                    <span class="text-danger">*</span>
                 </label>
 
                 <InputText id="name"
@@ -51,7 +52,8 @@
 
             <div class="mb-3">
                 <label for="country" class="form-label">
-                    Country <span class="text-danger">*</span>
+                    Країна
+                    <span class="text-danger">*</span>
                 </label>
 
                 <InputText id="country"
@@ -68,12 +70,12 @@
 
                 <button type="submit"
                         class="btn btn-success animated-btn">
-                    ✔ Create Team
+                    ✔ Додати команду
                 </button>
 
                 <a href="/teams"
                    class="btn btn-secondary animated-btn">
-                    ← Back to List
+                    ← Повернутися до списку
                 </a>
 
             </div>
@@ -109,7 +111,7 @@
         }
         catch (DbUpdateException)
         {
-            error = "Unable to create the team. Please try again.";
+            error = "Не вдалося додати команду. Спробуйте ще раз.";
             return;
         }
 

@@ -7,14 +7,14 @@
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Delete Team</PageTitle>
+<PageTitle>Видалення команди | FootballMatches</PageTitle>
 
-<h1>Delete Team</h1>
+<h1>Видалення команди</h1>
 <hr />
 
 @if (team is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Завантаження...</em></p>
 }
 else
 {
@@ -22,16 +22,16 @@ else
         <div class="col-md-8">
 
             <div class="alert alert-danger" role="alert">
-                <strong>Warning!</strong>
-                Are you sure you want to delete this team?
-                This action cannot be undone.
+                <strong>Увага!</strong>
+                Ви впевнені, що хочете видалити цю команду?
+                Цю дію неможливо скасувати.
             </div>
 
             <div class="card mb-4">
 
                 <div class="card-header">
                     <h5 class="mb-0">
-                        Team Information
+                        Інформація про команду
                     </h5>
                 </div>
 
@@ -39,7 +39,7 @@ else
                     <dl class="row">
 
                         <dt class="col-sm-4">
-                            Name
+                            Назва команди
                         </dt>
 
                         <dd class="col-sm-8">
@@ -47,7 +47,7 @@ else
                         </dd>
 
                         <dt class="col-sm-4">
-                            Country
+                            Країна
                         </dt>
 
                         <dd class="col-sm-8">
@@ -82,12 +82,12 @@ else
 
                     <button type="submit"
                             class="btn btn-danger animated-btn">
-                        🗑 Delete Team
+                        🗑 Видалити команду
                     </button>
 
                     <a href="/teams"
                        class="btn btn-secondary animated-btn">
-                        ← Back to List
+                        ← Повернутися до списку
                     </a>
 
                 </div>
@@ -126,7 +126,7 @@ else
 
         if (team is null)
         {
-            error = "Unable to load team data.";
+            error = "Не вдалося завантажити дані команди.";
             return;
         }
 
@@ -138,11 +138,11 @@ else
 
         if (existingTeam is null)
         {
-            error = "The team no longer exists in the database.";
+            error = "Цієї команди більше немає в базі даних.";
             return;
         }
 
-        // Check whether the team is used by football matches.
+        // Перевірка, чи бере команда участь у футбольних матчах.
         var isUsed = await context.FootballMatches
             .AnyAsync(m =>
                 m.HomeTeamId == existingTeam.Id ||
@@ -150,7 +150,7 @@ else
 
         if (isUsed)
         {
-            error = "This team cannot be deleted because it is used by one or more football matches.";
+            error = "Неможливо видалити цю команду, оскільки вона бере участь в одному або декількох футбольних матчах.";
             return;
         }
 
@@ -162,7 +162,7 @@ else
         }
         catch (DbUpdateException)
         {
-            error = "Unable to delete the team. Please try again.";
+            error = "Не вдалося видалити команду. Спробуйте ще раз.";
             return;
         }
 

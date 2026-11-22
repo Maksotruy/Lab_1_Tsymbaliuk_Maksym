@@ -7,14 +7,14 @@
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Team Details</PageTitle>
+<PageTitle>Деталі команди | FootballMatches</PageTitle>
 
-<h1>Team Details</h1>
+<h1>Деталі команди</h1>
 <hr />
 
 @if (team is null)
 {
-    <p><em>Loading...</em></p>
+    <p><em>Завантаження...</em></p>
 }
 else
 {
@@ -25,7 +25,7 @@ else
 
                 <div class="card-header">
                     <h5 class="mb-0">
-                        Team Information
+                        Інформація про команду
                     </h5>
                 </div>
 
@@ -33,7 +33,7 @@ else
                     <dl class="row">
 
                         <dt class="col-sm-4">
-                            Name
+                            Назва команди
                         </dt>
 
                         <dd class="col-sm-8">
@@ -41,7 +41,7 @@ else
                         </dd>
 
                         <dt class="col-sm-4">
-                            Country
+                            Країна
                         </dt>
 
                         <dd class="col-sm-8">
@@ -57,12 +57,12 @@ else
 
                 <a href="@($"/teams/edit?id={team.Id}")"
                    class="btn btn-primary animated-btn">
-                    ✏️ Edit
+                    ✏️ Редагувати
                 </a>
 
                 <a href="/teams"
                    class="btn btn-secondary animated-btn">
-                    ← Back to List
+                    ← Повернутися до списку
                 </a>
 
             </div>

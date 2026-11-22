@@ -8,222 +8,356 @@
 
 @inject IDbContextFactory<FootballMatchesContext> DbFactory
 
-<PageTitle>Football Matches</PageTitle>
+<PageTitle>Футбольні матчі | FootballMatches</PageTitle>
 
-<h1>Football Match List</h1>
-<hr />
+<div class="container-fluid px-0">
 
-<div class="mb-4">
-    <a href="/footballmatches/create"
-       class="btn btn-success animated-btn">
-        ➕ Add Football Match
-    </a>
-</div>
+    <div class="d-flex flex-wrap justify-content-between
+                align-items-center gap-3 mb-4">
 
-<form method="get" class="row g-2 mb-4">
+        <div>
+            <h1 class="fw-bold mb-2">Футбольні матчі</h1>
+            <p class="text-muted mb-0">
+                Перегляд, пошук і керування футбольними матчами.
+            </p>
+        </div>
 
-    <div class="col-md-3">
-        <label for="search" class="form-label">
-            Search Home Team
-        </label>
-
-        <input id="search"
-               type="text"
-               name="search"
-               value="@Search"
-               class="form-control"
-               placeholder="Enter home team name" />
-    </div>
-
-    <div class="col-md-3">
-        <label for="teamId" class="form-label">
-            Filter by Team
-        </label>
-
-        <select id="teamId"
-                name="teamId"
-                class="form-select">
-
-            <option value="">
-                All Teams
-            </option>
-
-            @foreach (var team in teams)
-            {
-                <option value="@team.Id"
-                        selected="@(TeamId == team.Id)">
-                    @team.Name
-                </option>
-            }
-
-        </select>
-    </div>
-
-    <div class="col-md-3">
-        <label for="sort" class="form-label">
-            Sort By
-        </label>
-
-        <select id="sort"
-                name="sort"
-                class="form-select">
-
-            <option value="date_desc"
-                    selected="@(Sort == "date_desc" || string.IsNullOrEmpty(Sort))">
-                Date (Newest First)
-            </option>
-
-            <option value="date_asc"
-                    selected="@(Sort == "date_asc")">
-                Date (Oldest First)
-            </option>
-
-            <option value="score_desc"
-                    selected="@(Sort == "score_desc")">
-                Home Score (Highest First)
-            </option>
-
-            <option value="score_asc"
-                    selected="@(Sort == "score_asc")">
-                Home Score (Lowest First)
-            </option>
-
-            <option value="team_asc"
-                    selected="@(Sort == "team_asc")">
-                Home Team (A-Z)
-            </option>
-
-            <option value="team_desc"
-                    selected="@(Sort == "team_desc")">
-                Home Team (Z-A)
-            </option>
-
-        </select>
-    </div>
-
-    <div class="col-md-3 d-flex align-items-end gap-2">
-
-        <button type="submit"
-                class="btn btn-primary animated-btn">
-            🔍 Search
-        </button>
-
-        <a href="/footballmatches"
-           class="btn btn-secondary animated-btn">
-            Reset
+        <a href="/footballmatches/create"
+           class="btn btn-success animated-btn">
+            + Додати матч
         </a>
-
     </div>
 
-</form>
-
-@if (!loaded)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <div class="table-responsive football-table">
-
-        <QuickGrid Class="table table-striped table-hover align-middle"
-                   Items="matches">
-
-            <PropertyColumn
-                Property="match => match.HomeTeam"
-                Title="Home Team" />
-
-            <PropertyColumn
-                Property="match => match.AwayTeam"
-                Title="Away Team" />
-
-            <PropertyColumn
-                Property="match => match.HomeScore"
-                Title="Home Score" />
-
-            <PropertyColumn
-                Property="match => match.AwayScore"
-                Title="Away Score" />
-
-            <PropertyColumn
-                Property="match => match.MatchDate"
-                Title="Match Date" />
-
-            <PropertyColumn
-                Property="match => match.Stadium"
-                Title="Stadium" />
-
-            <TemplateColumn Title="Competition" Context="match">
-                @(string.IsNullOrWhiteSpace(match.Competition)
-                    ? "Not specified"
-                    : match.Competition)
-            </TemplateColumn>
-
-            <PropertyColumn
-                Property="match => match.Status"
-                Title="Status" />
-
-            <TemplateColumn Title="Actions" Context="match">
-
-                <div class="d-flex flex-nowrap align-items-center gap-1">
-
-                    <a href="@($"/footballmatches/edit?id={match.Id}")"
-                       class="btn btn-sm btn-primary animated-btn text-nowrap">
-                        ✏️ Edit
-                    </a>
-
-                    <a href="@($"/footballmatches/details?id={match.Id}")"
-                       class="btn btn-sm animated-btn text-white text-nowrap"
-                       style="background-color: #fd7e14; border-color: #fd7e14;">
-                        👁 Details
-                    </a>
-
-                    <a href="@($"/footballmatches/delete?id={match.Id}")"
-                       class="btn btn-sm btn-danger animated-btn text-nowrap">
-                        🗑 Delete
-                    </a>
-
-                </div>
-
-            </TemplateColumn>
-
-        </QuickGrid>
-
-    </div>
-
-    @if (totalMatches == 0)
+    @if (Saved)
     {
-        <p class="mt-3 text-muted">
-            No football matches found.
-        </p>
+        <div class="alert alert-success" role="status">
+            <strong>Успішно!</strong>
+            Футбольний матч успішно збережено.
+        </div>
     }
 
-    <div class="d-flex justify-content-start align-items-center gap-3 mt-4 mb-3">
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
 
-        @if (currentPage > 1)
-        {
-            <a href="@BuildPageUrl(currentPage - 1)"
-               class="btn btn-warning animated-btn">
-                ← Previous
-            </a>
-        }
+            <h5 class="fw-semibold mb-3">
+                Пошук і фільтри
+            </h5>
 
-        <span class="fw-semibold text-center"
-              style="min-width: 110px; white-space: nowrap;">
-            Page @currentPage of @totalPages
-        </span>
+            <form method="get" class="row g-3">
 
-        @if (currentPage < totalPages)
-        {
-            <a href="@BuildPageUrl(currentPage + 1)"
-               class="btn btn-warning animated-btn">
-                Next →
-            </a>
-        }
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label for="search" class="form-label">
+                        Пошук домашньої команди
+                    </label>
 
+                    <input id="search"
+                           type="text"
+                           name="search"
+                           value="@Search"
+                           class="form-control"
+                           placeholder="Введіть назву команди" />
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label for="teamId" class="form-label">
+                        Фільтр за командою
+                    </label>
+
+                    <select id="teamId"
+                            name="teamId"
+                            class="form-select">
+
+                        <option value="">Усі команди</option>
+
+                        @foreach (var team in teams)
+                        {
+                            <option value="@team.Id"
+                                    selected="@(TeamId == team.Id)">
+                                @team.Name
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3">
+                    <label for="sort" class="form-label">
+                        Сортувати за
+                    </label>
+
+                    <select id="sort"
+                            name="sort"
+                            class="form-select">
+
+                        <option value="date_desc"
+                                selected="@(Sort == "date_desc" || string.IsNullOrEmpty(Sort))">
+                            Спочатку новіші
+                        </option>
+
+                        <option value="date_asc"
+                                selected="@(Sort == "date_asc")">
+                            Спочатку старіші
+                        </option>
+
+                        <option value="score_desc"
+                                selected="@(Sort == "score_desc")">
+                            Найбільше голів господарів
+                        </option>
+
+                        <option value="score_asc"
+                                selected="@(Sort == "score_asc")">
+                            Найменше голів господарів
+                        </option>
+
+                        <option value="team_asc"
+                                selected="@(Sort == "team_asc")">
+                            Домашня команда (А–Я)
+                        </option>
+
+                        <option value="team_desc"
+                                selected="@(Sort == "team_desc")">
+                            Домашня команда (Я–А)
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-6 col-xl-3
+                            d-flex align-items-end gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary animated-btn">
+                        Знайти
+                    </button>
+
+                    <a href="/footballmatches"
+                       class="btn btn-outline-secondary animated-btn">
+                        Скинути
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
-}
+
+    @if (!loaded)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary"
+                 role="status">
+                <span class="visually-hidden">Завантаження...</span>
+            </div>
+
+            <p class="text-muted mt-3">
+                Завантаження матчів...
+            </p>
+        </div>
+    }
+    else if (totalMatches == 0)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+
+                <h3 class="fw-bold mb-3">
+                    Матчів не знайдено
+                </h3>
+
+                <p class="text-muted mb-4">
+                    За заданими умовами пошуку матчів не знайдено,
+                    або матчі ще не додано.
+                    Змініть фільтри або додайте новий матч.
+                </p>
+
+                <div class="d-flex flex-wrap
+                            justify-content-center gap-2">
+
+                    <a href="/footballmatches/create"
+                       class="btn btn-success animated-btn">
+                        + Додати матч
+                    </a>
+
+                    <a href="/footballmatches"
+                       class="btn btn-outline-primary animated-btn">
+                        Очистити фільтри
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-3 p-md-4">
+
+                <div class="d-flex flex-wrap
+                            justify-content-between
+                            align-items-center gap-2 mb-3">
+
+                    <h5 class="fw-bold mb-0">
+                        Список матчів
+                    </h5>
+
+                    <span class="badge bg-primary rounded-pill">
+                        Знайдено: @totalMatches
+                    </span>
+                </div>
+
+                <div class="d-none d-xxl-block table-responsive football-table">
+
+                    <QuickGrid Class="table table-striped table-hover align-middle"
+                               Items="matches">
+
+                        <PropertyColumn
+                            Property="match => match.HomeTeam"
+                            Title="Домашня команда" />
+
+                        <PropertyColumn
+                            Property="match => match.AwayTeam"
+                            Title="Гостьова команда" />
+
+                        <PropertyColumn
+                            Property="match => match.HomeScore"
+                            Title="Голи господарів" />
+
+                        <PropertyColumn
+                            Property="match => match.AwayScore"
+                            Title="Голи гостей" />
+
+                        <TemplateColumn Title="Дата матчу"
+                                        Context="match">
+                            @match.MatchDate.ToString("dd.MM.yyyy")
+                        </TemplateColumn>
+
+                        <PropertyColumn
+                            Property="match => match.Stadium"
+                            Title="Стадіон" />
+
+                        <TemplateColumn Title="Турнір"
+                                        Context="match">
+                            @(string.IsNullOrWhiteSpace(match.Competition)
+                                ? "Не вказано"
+                                : match.Competition)
+                        </TemplateColumn>
+
+                        <TemplateColumn Title="Статус" Context="match">
+                            @GetStatusText(match.Status)
+                        </TemplateColumn>
+
+                        <TemplateColumn Title="Дії"
+                                        Context="match">
+
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+
+                                <a href="@($"/footballmatches/edit?id={match.Id}")"
+                                   class="btn btn-sm btn-primary animated-btn text-nowrap">
+                                    Редагувати
+                                </a>
+
+                                <a href="@($"/footballmatches/details?id={match.Id}")"
+                                   class="btn btn-sm animated-btn text-white text-nowrap"
+                                   style="background-color:#fd7e14;">
+                                    Деталі
+                                </a>
+
+                                <a href="@($"/footballmatches/delete?id={match.Id}")"
+                                   class="btn btn-sm btn-danger animated-btn text-nowrap">
+                                    Видалити
+                                </a>
+                            </div>
+                        </TemplateColumn>
+
+                    </QuickGrid>
+                </div>
+
+                <div class="d-xxl-none">
+                    <div class="row g-3">
+                    @foreach (var match in matches)
+                    {
+                        <div class="col-12 col-lg-6">
+                        <div class="card border shadow-sm h-100">
+                            <div class="card-body p-3">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                                    <strong class="text-break">@match.HomeTeam — @match.AwayTeam</strong>
+                                    <span class="badge bg-secondary">@GetStatusText(match.Status)</span>
+                                </div>
+
+                                <div class="text-center fs-3 fw-bold mb-3">
+                                    @match.HomeScore : @match.AwayScore
+                                </div>
+
+                                <dl class="row small mb-3">
+                                    <dt class="col-5">Дата матчу</dt>
+                                    <dd class="col-7 text-break">@match.MatchDate.ToString("dd.MM.yyyy")</dd>
+                                    <dt class="col-5">Стадіон</dt>
+                                    <dd class="col-7 text-break">@match.Stadium</dd>
+                                    <dt class="col-5">Турнір</dt>
+                                    <dd class="col-7 text-break">@(string.IsNullOrWhiteSpace(match.Competition) ? "Не вказано" : match.Competition)</dd>
+                                </dl>
+
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="@($"/footballmatches/edit?id={match.Id}")"
+                                       class="btn btn-sm btn-primary animated-btn flex-grow-1">Редагувати</a>
+                                    <a href="@($"/footballmatches/details?id={match.Id}")"
+                                       class="btn btn-sm animated-btn text-white flex-grow-1"
+                                       style="background-color:#fd7e14;">Деталі</a>
+                                    <a href="@($"/footballmatches/delete?id={match.Id}")"
+                                       class="btn btn-sm btn-danger animated-btn flex-grow-1">Видалити</a>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap
+                    justify-content-between
+                    align-items-center gap-3 mt-4 mb-3">
+
+            <span class="text-muted small">
+                Сторінка @currentPage із @totalPages
+            </span>
+
+            <div class="d-flex flex-wrap align-items-center gap-2">
+
+                @if (currentPage > 1)
+                {
+                    <a href="@BuildPageUrl(currentPage - 1)"
+                        data-enhance-nav="false"
+                        class="btn btn-warning animated-btn">
+                        ← Назад
+                    </a>
+                }
+
+                <span class="badge bg-light text-dark border px-3 py-2">
+                    @currentPage / @totalPages
+                </span>
+
+                @if (currentPage < totalPages)
+                {
+                    <a href="@BuildPageUrl(currentPage + 1)"
+                            data-enhance-nav="false"
+                            class="btn btn-warning animated-btn">
+                            Далі →
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
 
 @code {
+    private static string GetStatusText(MatchStatus status) =>
+        status.ToString() switch
+        {
+            "Scheduled" => "Заплановано",
+            "InProgress" => "Триває",
+            "Finished" => "Завершено",
+            "Completed" => "Завершено",
+            "Cancelled" => "Скасовано",
+            "Postponed" => "Перенесено",
+            _ => status.ToString()
+        };
+
     private IQueryable<FootballMatch> matches =
         Enumerable.Empty<FootballMatch>().AsQueryable();
 
@@ -236,6 +370,9 @@ else
     private int totalMatches = 0;
 
     private bool loaded = false;
+
+    [SupplyParameterFromQuery(Name = "saved")]
+    public bool Saved { get; set; }
 
     [SupplyParameterFromQuery(Name = "page")]
     public int? Page { get; set; }
@@ -268,7 +405,7 @@ else
                 .Include(m => m.AwayTeamReference)
                 .Include(m => m.StadiumReference);
 
-        // Lab 8: Case-insensitive search.
+        // Case-insensitive search
         if (!string.IsNullOrWhiteSpace(Search))
         {
             string searchText =
@@ -278,7 +415,7 @@ else
                 m.HomeTeamSearch.Contains(searchText));
         }
 
-        // Lab 8: Filter by home team.
+        // Filter by home team
         if (TeamId.HasValue)
         {
             int selectedTeamId = TeamId.Value;
@@ -287,7 +424,7 @@ else
                 m.HomeTeamId == selectedTeamId);
         }
 
-        // Lab 8: Sorting is performed by the database.
+        // Database sorting
         query = Sort switch
         {
             "date_asc" => query
@@ -315,7 +452,6 @@ else
                 .ThenBy(m => m.Id)
         };
 
-        // Count records after filtering.
         totalMatches = await query.CountAsync();
 
         totalPages = Math.Max(
@@ -329,7 +465,6 @@ else
             totalPages
         );
 
-        // Load only the records needed for this page.
         List<FootballMatch> result = await query
             .Skip((currentPage - 1) * pageSize)
             .Take(pageSize)

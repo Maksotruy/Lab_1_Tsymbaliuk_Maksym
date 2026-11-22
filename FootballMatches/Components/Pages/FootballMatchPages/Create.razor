@@ -10,13 +10,20 @@
 @inject IDbContextFactory<FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
 
-<PageTitle>Create Football Match</PageTitle>
+<PageTitle>Додавання футбольного матчу | FootballMatches</PageTitle>
 
-<h1>Create Football Match</h1>
-<hr />
+<div class="container-fluid px-0">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold mb-2">Додавання футбольного матчу</h1>
+            <p class="text-muted mb-0">Введіть дані нового футбольного матчу та збережіть їх.</p>
+        </div>
+        <a href="/footballmatches" class="btn btn-outline-secondary animated-btn">← Повернутися до матчів</a>
+    </div>
 
-<div class="row">
-    <div class="col-md-4">
+    <div class="card border-0 shadow-sm" style="max-width: 980px;">
+        <div class="card-body p-3 p-md-4">
+            <h5 class="fw-semibold mb-3">Інформація про матч</h5>
 
         <EditForm method="post"
                   Model="FootballMatch"
@@ -36,16 +43,17 @@
                 </div>
             }
 
-            <div class="mb-3">
+            <div class="row g-3">
+            <div class="col-12 col-md-6">
                 <label for="hometeam" class="form-label">
-                    Home Team:
+                    Домашня команда:
                 </label>
 
                 <InputSelect id="hometeam"
                              @bind-Value="FootballMatch.HomeTeamId"
                              class="form-select">
 
-                    <option value="">Select Home Team</option>
+                    <option value="">Виберіть домашню команду</option>
 
                     @foreach (var team in teams)
                     {
@@ -61,16 +69,16 @@
                     class="text-danger" />
             </div>
 
-            <div class="mb-3">
+            <div class="col-12 col-md-6">
                 <label for="awayteam" class="form-label">
-                    Away Team:
+                    Гостьова команда:
                 </label>
 
                 <InputSelect id="awayteam"
                              @bind-Value="FootballMatch.AwayTeamId"
                              class="form-select">
 
-                    <option value="">Select Away Team</option>
+                    <option value="">Виберіть гостьову команду</option>
 
                     @foreach (var team in teams)
                     {
@@ -86,9 +94,9 @@
                     class="text-danger" />
             </div>
 
-            <div class="mb-3">
+            <div class="col-12 col-md-6">
                 <label for="homescore" class="form-label">
-                    Home Score:
+                    Голи домашньої команди:
                 </label>
 
                 <InputNumber id="homescore"
@@ -100,9 +108,9 @@
                     class="text-danger" />
             </div>
 
-            <div class="mb-3">
+            <div class="col-12 col-md-6">
                 <label for="awayscore" class="form-label">
-                    Away Score:
+                    Голи гостьової команди:
                 </label>
 
                 <InputNumber id="awayscore"
@@ -114,9 +122,9 @@
                     class="text-danger" />
             </div>
 
-            <div class="mb-3">
+            <div class="col-12 col-md-6">
                 <label for="matchdate" class="form-label">
-                    Match Date:
+                    Дата матчу:
                 </label>
 
                 <InputDate id="matchdate"
@@ -128,16 +136,16 @@
                     class="text-danger" />
             </div>
 
-            <div class="mb-3">
+            <div class="col-12 col-md-6">
                 <label for="stadium" class="form-label">
-                    Stadium:
+                    Стадіон:
                 </label>
 
                 <InputSelect id="stadium"
                              @bind-Value="FootballMatch.StadiumId"
                              class="form-select">
 
-                    <option value="">Select Stadium</option>
+                    <option value="">Виберіть стадіон</option>
 
                     @foreach (var stadium in stadiums)
                     {
@@ -153,16 +161,16 @@
                     class="text-danger" />
             </div>
 
-            <div class="mb-3">
+            <div class="col-12 col-md-6">
                 <label for="competition" class="form-label">
-                    Competition:
+                    Турнір:
                 </label>
 
                 <InputSelect id="competition"
                              @bind-Value="FootballMatch.Competition"
                              class="form-select">
 
-                    <option value="">Select Competition</option>
+                    <option value="">Виберіть турнір</option>
                     <option value="UEFA Champions League">UEFA Champions League</option>
                     <option value="UEFA Europa League">UEFA Europa League</option>
                     <option value="UEFA Conference League">UEFA Conference League</option>
@@ -173,7 +181,7 @@
                     <option value="Ligue 1">Ligue 1</option>
                     <option value="Primeira Liga">Primeira Liga</option>
                     <option value="Ukrainian Premier League">Ukrainian Premier League</option>
-                    <option value="Other">Other</option>
+                    <option value="Other">Інший турнір</option>
 
                 </InputSelect>
 
@@ -182,9 +190,9 @@
                     class="text-danger" />
             </div>
 
-            <div class="mb-3">
+            <div class="col-12 col-md-6">
                 <label for="status" class="form-label">
-                    Match Status:
+                    Статус матчу:
                 </label>
 
                 <InputSelect id="status"
@@ -194,7 +202,7 @@
                     @foreach (var status in Enum.GetValues<MatchStatus>())
                     {
                         <option value="@status">
-                            @status
+                            @GetStatusText(status)
                         </option>
                     }
 
@@ -205,26 +213,40 @@
                     class="text-danger" />
             </div>
 
-            <div class="d-flex flex-wrap gap-2 mt-4 mb-3">
+            <div class="col-12 d-flex flex-wrap gap-2 mt-3">
 
                 <button type="submit"
                         class="btn btn-success animated-btn">
-                    ✔ Create Match
+                    ✔ Створити матч
                 </button>
 
                 <a href="/footballmatches"
                    class="btn btn-secondary animated-btn">
-                    ← Back to List
+                    ← Повернутися до матчів
                 </a>
 
+            </div>
             </div>
 
         </EditForm>
 
+        </div>
     </div>
 </div>
 
 @code {
+    private static string GetStatusText(MatchStatus status) =>
+        status.ToString() switch
+        {
+            "Scheduled" => "Заплановано",
+            "InProgress" => "Триває",
+            "Finished" => "Завершено",
+            "Completed" => "Завершено",
+            "Cancelled" => "Скасовано",
+            "Postponed" => "Перенесено",
+            _ => status.ToString()
+        };
+
     [SupplyParameterFromForm]
     private FootballMatch FootballMatch { get; set; } = default!;
 
@@ -262,25 +284,25 @@
             !FootballMatch.AwayTeamId.HasValue ||
             !FootballMatch.StadiumId.HasValue)
         {
-            error = "Please select both teams and a stadium.";
+            error = "Виберіть обидві команди та стадіон.";
             return;
         }
 
         if (FootballMatch.HomeTeamId == FootballMatch.AwayTeamId)
         {
-            error = "Home Team and Away Team cannot be the same.";
+            error = "Домашня та гостьова команди не можуть бути однаковими.";
             return;
         }
 
         if (FootballMatch.MatchDate == default)
         {
-            error = "Please enter a valid match date.";
+            error = "Введіть коректну дату матчу.";
             return;
         }
 
         if (string.IsNullOrWhiteSpace(FootballMatch.Competition))
         {
-            error = "Please select a competition.";
+            error = "Виберіть турнір.";
             return;
         }
 
@@ -288,7 +310,7 @@
             (FootballMatch.HomeScore != 0 ||
              FootballMatch.AwayScore != 0))
         {
-            error = "A scheduled match must have a score of 0:0.";
+            error = "Запланований матч повинен мати рахунок 0:0.";
             return;
         }
 
@@ -308,7 +330,7 @@
             awayTeam is null ||
             stadium is null)
         {
-            error = "One of the selected teams or stadiums no longer exists.";
+            error = "Одна з вибраних команд або стадіон більше не існує.";
             return;
         }
 
@@ -337,15 +359,15 @@
             when (ex.InnerException is SqliteException
                 { SqliteExtendedErrorCode: 2067 })
         {
-            error = "A match between these teams on this date already exists.";
+            error = "Матч між цими командами на цю дату вже існує.";
             return;
         }
         catch (DbUpdateException)
         {
-            error = "Failed to save the match. Please try again.";
+            error = "Не вдалося зберегти матч. Спробуйте ще раз.";
             return;
         }
 
-        NavigationManager.NavigateTo("/footballmatches");
+        NavigationManager.NavigateTo("/footballmatches?saved=true");
     }
 }
