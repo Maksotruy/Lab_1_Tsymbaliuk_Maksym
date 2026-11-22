@@ -237,3 +237,43 @@
 ### Висновок
 
 Під час виконання лабораторної роботи було реалізовано механізми пошуку, фільтрації та сортування футбольних матчів за допомогою LINQ. Використання асинхронних методів Entity Framework Core дозволяє виконувати операції з базою даних без блокування потоку виконання застосунку. Отримано практичні навички роботи з LINQ, SQLite та асинхронним програмуванням у Blazor.
+
+
+---
+
+## Lab 9: Summary Page — Grouping and Aggregation
+
+### Objective
+Develop a statistics page that displays aggregated football match
+data using LINQ and Entity Framework Core.
+
+### Implementation
+
+1. Created the Services/SummaryCalculator.cs file.
+2. Implemented a SummaryRow record for aggregated results.
+3. Added grouping by home teams using GroupBy().
+4. Added grouping by year and month.
+5. Implemented total match and goal calculations.
+6. Used asynchronous database queries with ToListAsync(),
+   CountAsync(), and SumAsync().
+7. Created the Components/Pages/Summary.razor page.
+8. Added the Summary.razor.css stylesheet.
+9. Implemented statistics cards and responsive tables.
+10. Added the Statistics link to the navigation menu.
+11. Implemented an empty-state message.
+
+### Technologies
+- C#
+- .NET 10
+- Blazor
+- Entity Framework Core
+- SQLite
+- LINQ
+- HTML and CSS
+
+### Result
+The application displays aggregated football match statistics
+by home team, by month, and for the entire database.
+
+Grouping and aggregation are performed by SQLite through
+Entity Framework Core.

@@ -249,3 +249,32 @@ dotnet run
 ## Висновок
 
 У процесі розробки FootballMatches було створено вебзастосунок для обліку футбольних матчів. У межах лабораторної роботи №8 реалізовано пошук, фільтрацію, сортування та пагінацію з використанням LINQ. Асинхронні методи Entity Framework Core забезпечують неблокувальний доступ до бази даних.
+
+
+---
+
+## Match Statistics (Lab 9)
+
+The FootballMatches application includes a statistics dashboard
+available at `/summary`.
+
+### Features
+
+- Total number of football matches
+- Total goals scored by home teams
+- Number of home teams
+- Number of months with recorded matches
+- Match statistics grouped by team
+- Match statistics grouped by month
+- Responsive statistics dashboard
+- Empty-state handling
+
+### Implementation
+
+The `SummaryCalculator` service uses LINQ and Entity Framework Core
+to calculate aggregated results directly in SQLite.
+
+The `SummaryRow` record stores the calculated values.
+
+The statistics page uses asynchronous queries to retrieve
+and display the results.

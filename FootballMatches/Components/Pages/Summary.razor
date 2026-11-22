@@ -1,0 +1,157 @@
+
+@page "/summary"
+
+@using Microsoft.EntityFrameworkCore
+@using FootballMatches.Data
+@using FootballMatches.Services
+
+@inject IDbContextFactory<FootballMatchesContext> DbFactory
+
+<PageTitle>Match Statistics | FootballMatches</PageTitle>
+
+<div class="summary-page">
+    <div class="summary-header">
+        <div>
+            <h1>Match Statistics</h1>
+            <p>Explore football match statistics, team performance and monthly trends.</p>
+        </div>
+        <span class="summary-label">OVERVIEW</span>
+    </div>
+
+    @if (loading)
+    {
+        <div class="summary-empty">Loading statistics...</div>
+    }
+    else if (total.Count == 0)
+    {
+        <div class="summary-empty">
+            <h3>No matches available</h3>
+            <p>Add your first football match to view statistics.</p>
+            <a class="summary-button" href="/footballmatches">
+                View Matches
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">⚽</div>
+                <div class="stat-label">Total Matches</div>
+                <div class="stat-value">@total.Count</div>
+                <div class="stat-description">Matches in the database</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🥅</div>
+                <div class="stat-label">Home Goals</div>
+                <div class="stat-value">@total.Total</div>
+                <div class="stat-description">Goals scored by home teams</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-label">Home Teams</div>
+                <div class="stat-value">@byTeam.Count</div>
+                <div class="stat-description">Teams appearing as hosts</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-label">Active Months</div>
+                <div class="stat-value">@byMonth.Count</div>
+                <div class="stat-description">Months with recorded matches</div>
+            </div>
+        </div>
+
+        <section class="summary-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Team Statistics</h2>
+                    <p>Match count and goals scored by each home team.</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Home Team</th>
+                            <th>Matches</th>
+                            <th>Goals Scored</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in byTeam)
+                        {
+                            <tr>
+                                <td class="team-name">@row.Name</td>
+                                <td>@row.Count</td>
+                                <td>@row.Total</td>
+                            </tr>
+                        }
+                        <tr class="total-row">
+                            <td>Total</td>
+                            <td>@total.Count</td>
+                            <td>@total.Total</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="summary-section">
+            <div class="section-heading">
+                <div>
+                    <h2>Monthly Statistics</h2>
+                    <p>Football match activity grouped by month.</p>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Matches</th>
+                            <th>Goals Scored</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in byMonth)
+                        {
+                            <tr>
+                                <td class="team-name">@row.Name</td>
+                                <td>@row.Count</td>
+                                <td>@row.Total</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    private bool loading = true;
+
+    private List<SummaryRow> byTeam = new();
+    private List<SummaryRow> byMonth = new();
+
+    private SummaryRow total = new("Total", 0, 0);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var db =
+            await DbFactory.CreateDbContextAsync();
+
+        var query = db.FootballMatches.AsNoTracking();
+
+        byTeam = await SummaryCalculator.ByTeamAsync(query);
+        byMonth = await SummaryCalculator.ByMonthAsync(query);
+        total = await SummaryCalculator.TotalAsync(query);
+
+        loading = false;
+    }
+}

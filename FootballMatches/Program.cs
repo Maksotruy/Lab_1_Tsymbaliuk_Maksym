@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using FootballMatches.Data;
 using FootballMatches.Components;
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Підключення до бази даних SQLite
 builder.Services.AddDbContextFactory<FootballMatchesContext>(o =>
     o.UseSqlite("Data Source=footballmatches.db"));
 
@@ -25,13 +27,16 @@ if (!app.Environment.IsDevelopment())
     app.UseMigrationsEndPoint();
 }
 
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+app.UseStatusCodePagesWithReExecute(
+    "/not-found",
+    createScopeForStatusCodePages: true);
 
 app.UseHttpsRedirection();
 
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
