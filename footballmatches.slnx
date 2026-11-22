@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="footballmatches.tests/footballmatches.tests.csproj" />
+  <Project Path="FootballMatches/FootballMatches.csproj" />
+</Solution>
