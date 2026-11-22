@@ -317,6 +317,10 @@
         FootballMatch.AwayTeam = awayTeam.Name;
         FootballMatch.Stadium = stadium.Name;
 
+        // Lab 8: Store the normalized team name for searching.
+        FootballMatch.HomeTeamSearch =
+            FootballMatch.HomeTeam.ToLowerInvariant();
+
         // Validate after filling required text fields.
         if (!editContext.Validate())
         {

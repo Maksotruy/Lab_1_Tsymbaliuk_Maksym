@@ -34,9 +34,6 @@ namespace FootballMatches.Migrations
                     b.Property<int?>("AwayTeamId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("AwayTeamReferenceId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Competition")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -53,8 +50,9 @@ namespace FootballMatches.Migrations
                     b.Property<int?>("HomeTeamId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int?>("HomeTeamReferenceId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("HomeTeamSearch")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<DateOnly>("MatchDate")
                         .HasColumnType("TEXT");
@@ -71,9 +69,9 @@ namespace FootballMatches.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AwayTeamReferenceId");
+                    b.HasIndex("AwayTeamId");
 
-                    b.HasIndex("HomeTeamReferenceId");
+                    b.HasIndex("HomeTeamId");
 
                     b.HasIndex("StadiumId");
 
@@ -129,15 +127,18 @@ namespace FootballMatches.Migrations
                 {
                     b.HasOne("FootballMatches.Models.Team", "AwayTeamReference")
                         .WithMany()
-                        .HasForeignKey("AwayTeamReferenceId");
+                        .HasForeignKey("AwayTeamId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("FootballMatches.Models.Team", "HomeTeamReference")
                         .WithMany()
-                        .HasForeignKey("HomeTeamReferenceId");
+                        .HasForeignKey("HomeTeamId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("FootballMatches.Models.Stadium", "StadiumReference")
                         .WithMany()
-                        .HasForeignKey("StadiumId");
+                        .HasForeignKey("StadiumId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("AwayTeamReference");
 

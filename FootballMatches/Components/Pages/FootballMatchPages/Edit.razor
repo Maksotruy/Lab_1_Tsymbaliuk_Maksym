@@ -373,6 +373,10 @@ else
         FootballMatch.AwayTeam = awayTeam.Name;
         FootballMatch.Stadium = stadium.Name;
 
+        // Lab 8: Update the normalized search field.
+        FootballMatch.HomeTeamSearch =
+            FootballMatch.HomeTeam.ToLowerInvariant();
+
         if (!editContext.Validate())
         {
             return;
@@ -395,6 +399,9 @@ else
         existingMatch.HomeTeam = FootballMatch.HomeTeam;
         existingMatch.AwayTeam = FootballMatch.AwayTeam;
         existingMatch.Stadium = FootballMatch.Stadium;
+
+        // Lab 8: Save the updated search field.
+        existingMatch.HomeTeamSearch = FootballMatch.HomeTeamSearch;
 
         existingMatch.HomeScore = FootballMatch.HomeScore;
         existingMatch.AwayScore = FootballMatch.AwayScore;

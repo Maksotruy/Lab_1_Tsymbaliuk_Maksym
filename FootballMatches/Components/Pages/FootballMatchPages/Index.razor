@@ -6,8 +6,6 @@
 @using FootballMatches.Models
 @using FootballMatches.Data
 
-@implements IAsyncDisposable
-
 @inject IDbContextFactory<FootballMatchesContext> DbFactory
 
 <PageTitle>Football Matches</PageTitle>
@@ -22,7 +20,104 @@
     </a>
 </div>
 
-@if (context is null)
+<form method="get" class="row g-2 mb-4">
+
+    <div class="col-md-3">
+        <label for="search" class="form-label">
+            Search Home Team
+        </label>
+
+        <input id="search"
+               type="text"
+               name="search"
+               value="@Search"
+               class="form-control"
+               placeholder="Enter home team name" />
+    </div>
+
+    <div class="col-md-3">
+        <label for="teamId" class="form-label">
+            Filter by Team
+        </label>
+
+        <select id="teamId"
+                name="teamId"
+                class="form-select">
+
+            <option value="">
+                All Teams
+            </option>
+
+            @foreach (var team in teams)
+            {
+                <option value="@team.Id"
+                        selected="@(TeamId == team.Id)">
+                    @team.Name
+                </option>
+            }
+
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label for="sort" class="form-label">
+            Sort By
+        </label>
+
+        <select id="sort"
+                name="sort"
+                class="form-select">
+
+            <option value="date_desc"
+                    selected="@(Sort == "date_desc" || string.IsNullOrEmpty(Sort))">
+                Date (Newest First)
+            </option>
+
+            <option value="date_asc"
+                    selected="@(Sort == "date_asc")">
+                Date (Oldest First)
+            </option>
+
+            <option value="score_desc"
+                    selected="@(Sort == "score_desc")">
+                Home Score (Highest First)
+            </option>
+
+            <option value="score_asc"
+                    selected="@(Sort == "score_asc")">
+                Home Score (Lowest First)
+            </option>
+
+            <option value="team_asc"
+                    selected="@(Sort == "team_asc")">
+                Home Team (A-Z)
+            </option>
+
+            <option value="team_desc"
+                    selected="@(Sort == "team_desc")">
+                Home Team (Z-A)
+            </option>
+
+        </select>
+    </div>
+
+    <div class="col-md-3 d-flex align-items-end gap-2">
+
+        <button type="submit"
+                class="btn btn-primary animated-btn">
+            🔍 Search
+        </button>
+
+        <a href="/footballmatches"
+           class="btn btn-secondary animated-btn">
+            Reset
+        </a>
+
+    </div>
+
+</form>
+
+@if (!loaded)
 {
     <p><em>Loading...</em></p>
 }
@@ -95,11 +190,18 @@ else
 
     </div>
 
+    @if (totalMatches == 0)
+    {
+        <p class="mt-3 text-muted">
+            No football matches found.
+        </p>
+    }
+
     <div class="d-flex justify-content-start align-items-center gap-3 mt-4 mb-3">
 
         @if (currentPage > 1)
         {
-            <a href="@($"/footballmatches?page={currentPage - 1}")"
+            <a href="@BuildPageUrl(currentPage - 1)"
                class="btn btn-warning animated-btn">
                 ← Previous
             </a>
@@ -112,7 +214,7 @@ else
 
         @if (currentPage < totalPages)
         {
-            <a href="@($"/footballmatches?page={currentPage + 1}")"
+            <a href="@BuildPageUrl(currentPage + 1)"
                class="btn btn-warning animated-btn">
                 Next →
             </a>
@@ -122,50 +224,149 @@ else
 }
 
 @code {
-    private FootballMatchesContext? context;
-
     private IQueryable<FootballMatch> matches =
         Enumerable.Empty<FootballMatch>().AsQueryable();
+
+    private List<Team> teams = new();
 
     private const int pageSize = 10;
 
     private int currentPage = 1;
     private int totalPages = 1;
+    private int totalMatches = 0;
+
+    private bool loaded = false;
 
     [SupplyParameterFromQuery(Name = "page")]
-    private int? Page { get; set; }
+    public int? Page { get; set; }
+
+    [SupplyParameterFromQuery(Name = "search")]
+    public string? Search { get; set; }
+
+    [SupplyParameterFromQuery(Name = "teamId")]
+    public int? TeamId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "sort")]
+    public string? Sort { get; set; }
 
     protected override async Task OnParametersSetAsync()
     {
-        if (context is not null)
+        loaded = false;
+
+        await using var context =
+            await DbFactory.CreateDbContextAsync();
+
+        teams = await context.Set<Team>()
+            .AsNoTracking()
+            .OrderBy(t => t.Name)
+            .ToListAsync();
+
+        IQueryable<FootballMatch> query =
+            context.FootballMatches
+                .AsNoTracking()
+                .Include(m => m.HomeTeamReference)
+                .Include(m => m.AwayTeamReference)
+                .Include(m => m.StadiumReference);
+
+        // Lab 8: Case-insensitive search.
+        if (!string.IsNullOrWhiteSpace(Search))
         {
-            await context.DisposeAsync();
+            string searchText =
+                Search.Trim().ToLowerInvariant();
+
+            query = query.Where(m =>
+                m.HomeTeamSearch.Contains(searchText));
         }
 
-        context = await DbFactory.CreateDbContextAsync();
+        // Lab 8: Filter by home team.
+        if (TeamId.HasValue)
+        {
+            int selectedTeamId = TeamId.Value;
 
-        int totalMatches =
-            await context.FootballMatches.CountAsync();
+            query = query.Where(m =>
+                m.HomeTeamId == selectedTeamId);
+        }
+
+        // Lab 8: Sorting is performed by the database.
+        query = Sort switch
+        {
+            "date_asc" => query
+                .OrderBy(m => m.MatchDate)
+                .ThenBy(m => m.Id),
+
+            "score_desc" => query
+                .OrderByDescending(m => m.HomeScore)
+                .ThenBy(m => m.Id),
+
+            "score_asc" => query
+                .OrderBy(m => m.HomeScore)
+                .ThenBy(m => m.Id),
+
+            "team_asc" => query
+                .OrderBy(m => m.HomeTeam)
+                .ThenBy(m => m.Id),
+
+            "team_desc" => query
+                .OrderByDescending(m => m.HomeTeam)
+                .ThenBy(m => m.Id),
+
+            _ => query
+                .OrderByDescending(m => m.MatchDate)
+                .ThenBy(m => m.Id)
+        };
+
+        // Count records after filtering.
+        totalMatches = await query.CountAsync();
 
         totalPages = Math.Max(
             1,
             (int)Math.Ceiling(totalMatches / (double)pageSize)
         );
 
-        currentPage = Math.Clamp(Page ?? 1, 1, totalPages);
+        currentPage = Math.Clamp(
+            Page ?? 1,
+            1,
+            totalPages
+        );
 
-        matches = context.FootballMatches
-            .AsNoTracking()
-            .OrderBy(m => m.Id)
+        // Load only the records needed for this page.
+        List<FootballMatch> result = await query
             .Skip((currentPage - 1) * pageSize)
-            .Take(pageSize);
+            .Take(pageSize)
+            .ToListAsync();
+
+        matches = result.AsQueryable();
+
+        loaded = true;
     }
 
-    public async ValueTask DisposeAsync()
+    private string BuildPageUrl(int page)
     {
-        if (context is not null)
+        var parameters = new List<string>
         {
-            await context.DisposeAsync();
+            $"page={page}"
+        };
+
+        if (!string.IsNullOrWhiteSpace(Search))
+        {
+            parameters.Add(
+                $"search={Uri.EscapeDataString(Search)}"
+            );
         }
+
+        if (TeamId.HasValue)
+        {
+            parameters.Add($"teamId={TeamId.Value}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(Sort))
+        {
+            parameters.Add(
+                $"sort={Uri.EscapeDataString(Sort)}"
+            );
+        }
+
+        return "/footballmatches?" +
+            string.Join("&", parameters);
     }
 }

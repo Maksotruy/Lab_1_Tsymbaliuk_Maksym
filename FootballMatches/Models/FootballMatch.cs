@@ -32,6 +32,8 @@ public class FootballMatch
     [StringLength(100, ErrorMessage = "Назва турніру не може перевищувати 100 символів")]
     public string Competition { get; set; } = "";
 
+    public string HomeTeamSearch { get; set; } = "";
+
     public int? HomeTeamId { get; set; }
     public Team? HomeTeamReference { get; set; }
 
