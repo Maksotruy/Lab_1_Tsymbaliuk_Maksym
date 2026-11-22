@@ -9,6 +9,7 @@
 
 @inject IDbContextFactory<FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ILogger<Create> Logger
 
 <PageTitle>Додавання футбольного матчу | FootballMatches</PageTitle>
 
@@ -354,6 +355,7 @@
         try
         {
             await context.SaveChangesAsync();
+            Logger.LogInformation("Створено футбольний матч ID={MatchId}", FootballMatch.Id);
         }
         catch (DbUpdateException ex)
             when (ex.InnerException is SqliteException

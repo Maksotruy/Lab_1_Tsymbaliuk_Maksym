@@ -1,8 +1,18 @@
 
+@inject IConfiguration Config
+
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="/">
-            ⚽ FootballMatches
+        <a class="navbar-brand"
+           href="/"
+           data-enhance-nav="false"
+           style="white-space: normal;
+                  overflow-wrap: anywhere;
+                  font-size: 16px;
+                  line-height: 1.4;
+                  max-width: 100%;
+                  margin-right: 0;">
+            ⚽ @Config["FootballMatches:Title"]
         </a>
     </div>
 </div>
@@ -13,16 +23,17 @@
        class="navbar-toggler" />
 
 <div class="nav-scrollable"
-     onclick="document.querySelector('.navbar-toggler').click()">
+     onclick="document.querySelector('.navbar-toggler')?.click()">
 
     <nav class="nav flex-column"
          aria-label="Основна навігація">
 
-        <!-- Головна сторінка -->
+        <!-- Головна -->
         <div class="nav-item px-3">
             <NavLink class="nav-link"
                      href=""
-                     Match="NavLinkMatch.All">
+                     Match="NavLinkMatch.All"
+                     data-enhance-nav="false">
                 <span class="bi bi-house-door-fill-nav-menu"
                       aria-hidden="true"></span>
                 Головна
@@ -33,7 +44,8 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link"
                      href="footballmatches"
-                     Match="NavLinkMatch.Prefix">
+                     Match="NavLinkMatch.Prefix"
+                     data-enhance-nav="false">
                 <span class="bi bi-list-nested-nav-menu"
                       aria-hidden="true"></span>
                 Футбольні матчі
@@ -44,7 +56,8 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link"
                      href="teams"
-                     Match="NavLinkMatch.Prefix">
+                     Match="NavLinkMatch.Prefix"
+                     data-enhance-nav="false">
                 <span class="bi bi-people-fill"
                       aria-hidden="true"></span>
                 Команди
@@ -55,7 +68,8 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link"
                      href="stadiums"
-                     Match="NavLinkMatch.Prefix">
+                     Match="NavLinkMatch.Prefix"
+                     data-enhance-nav="false">
                 <span class="bi bi-building"
                       aria-hidden="true"></span>
                 Стадіони
@@ -66,7 +80,8 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link"
                      href="summary"
-                     Match="NavLinkMatch.Prefix">
+                     Match="NavLinkMatch.Prefix"
+                     data-enhance-nav="false">
                 <span class="bi bi-bar-chart-fill"
                       aria-hidden="true"></span>
                 Статистика

@@ -10,13 +10,35 @@ using FootballMatches.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// =====================================
 // Налаштування Blazor
+// =====================================
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Підключення SQLite
+// =====================================
+// ЛР №13: Статичні ресурси в Production
+// =====================================
+
+// Дозволяє перевіряти Production через dotnet run,
+// коли застосунок ще не опубліковано.
+if (builder.Environment.IsProduction())
+{
+    builder.WebHost.UseStaticWebAssets();
+}
+
+// =====================================
+// ЛР №13: Конфігурація SQLite
+// =====================================
+
+var connectionString = builder.Configuration
+    .GetConnectionString("Default")
+    ?? throw new InvalidOperationException(
+        "Не знайдено рядок підключення ConnectionStrings:Default.");
+
 builder.Services.AddDbContextFactory<FootballMatchesContext>(options =>
-    options.UseSqlite("Data Source=footballmatches.db"));
+    options.UseSqlite(connectionString));
 
 // QuickGrid
 builder.Services.AddQuickGridEntityFrameworkAdapter();
@@ -29,18 +51,42 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-// Документація OpenAPI та Scalar
+// =====================================
+// ЛР №13: Автоматичні міграції
+// =====================================
+
+var factory = app.Services
+    .GetRequiredService<IDbContextFactory<FootballMatchesContext>>();
+
+await using (var db = await factory.CreateDbContextAsync())
+{
+    await db.Database.MigrateAsync();
+}
+
+// =====================================
+// OpenAPI та Scalar
+// =====================================
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
-// Обробка помилок у Production
+// =====================================
+// Обробка помилок
+// =====================================
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler(
+        "/Error",
+        createScopeForErrors: true);
+
     app.UseHsts();
+}
+else
+{
     app.UseMigrationsEndPoint();
 }
 
@@ -48,7 +94,12 @@ app.UseStatusCodePagesWithReExecute(
     "/not-found",
     createScopeForStatusCodePages: true);
 
-app.UseHttpsRedirection();
+// HTTPS-перенаправлення лише в Development,
+// щоб не заважати запуску контейнера через HTTP.
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAntiforgery();
 

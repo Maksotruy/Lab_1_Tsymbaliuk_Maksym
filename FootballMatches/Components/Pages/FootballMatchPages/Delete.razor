@@ -8,6 +8,7 @@
 
 @inject IDbContextFactory<FootballMatches.Data.FootballMatchesContext> DbFactory
 @inject NavigationManager NavigationManager
+@inject ILogger<Delete> Logger
 
 <PageTitle>Видалення футбольного матчу | FootballMatches</PageTitle>
 
@@ -278,6 +279,7 @@
         try
         {
             await context.SaveChangesAsync();
+            Logger.LogInformation("Видалено футбольний матч ID={MatchId}", match.Id);
         }
         catch (DbUpdateException)
         {

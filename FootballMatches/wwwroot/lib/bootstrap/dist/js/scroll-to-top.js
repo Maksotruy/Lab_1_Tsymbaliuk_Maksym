@@ -1,22 +1,21 @@
 
 (function () {
-    "use strict";
-
-    if ("scrollRestoration" in history) {
-        history.scrollRestoration = "manual";
+    if (window.footballMatchesScrollInitialized) {
+        return;
     }
+
+    window.footballMatchesScrollInitialized = true;
 
     function scrollToTop() {
         window.scrollTo(0, 0);
-
         document.documentElement.scrollTop = 0;
         document.body.scrollTop = 0;
 
-        document.querySelectorAll(
-            "main, article, .content, .page, .overflow-auto"
-        ).forEach(element => {
-            element.scrollTop = 0;
-        });
+        const main = document.getElementById("main-content");
+        const content = document.getElementById("page-content");
+
+        if (main) main.scrollTop = 0;
+        if (content) content.scrollTop = 0;
     }
 
     function resetScroll() {
@@ -24,34 +23,26 @@
 
         requestAnimationFrame(() => {
             scrollToTop();
-
             requestAnimationFrame(scrollToTop);
         });
     }
 
     window.footballMatchesScrollToTop = resetScroll;
 
-    document.addEventListener("enhancedload", resetScroll);
+    // Після кожного завершеного переходу Blazor.
+    if (typeof Blazor !== "undefined") {
+        Blazor.addEventListener("enhancedload", resetScroll);
+    }
 
-    window.addEventListener("popstate", resetScroll);
-
+    // Відстеження натискань на всі пункти меню.
     document.addEventListener("click", function (event) {
-        const link = event.target.closest("a[href]");
+        const link = event.target.closest(".sidebar a[href]");
 
-        if (!link) {
-            return;
-        }
+        if (!link) return;
 
-        const url = new URL(link.href, window.location.href);
-
-        if (
-            url.origin === window.location.origin &&
-            url.pathname === "/footballmatches" &&
-            url.searchParams.has("page")
-        ) {
-            resetScroll();
-        }
+        resetScroll();
     });
 
-    window.addEventListener("load", resetScroll);
+    // Назад / Вперед у браузері.
+    window.addEventListener("popstate", resetScroll);
 })();
