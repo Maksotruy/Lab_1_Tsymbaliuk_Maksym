@@ -1,0 +1,22 @@
+
+@host = http://localhost:5291
+
+### 1. Отримати всі футбольні матчі
+GET {{host}}/api/footballmatches
+Accept: application/json
+
+### 2. Отримати футбольний матч за ID
+GET {{host}}/api/footballmatches/37
+Accept: application/json
+
+### 3. Перевірити неіснуючий матч (404)
+GET {{host}}/api/footballmatches/99999
+Accept: application/json
+
+### 4. Отримати статистику матчів
+GET {{host}}/api/summary
+Accept: application/json
+
+### 5. Отримати опис OpenAPI
+GET {{host}}/openapi/v1.json
+Accept: application/json
